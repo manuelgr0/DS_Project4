@@ -1,0 +1,21 @@
+==========================================================================================
+Köbi:
+I - ACK Table:
+Each entry is a number representing the packet number that is expected next, not a simple boolean value. The entry 10 in the cell (x,y) means that y received packets 0-9 from sender x. I assume we want to enumerate all packets anyway to handle reordering of packets.
+
+II - Better way for table updates
+What is the problem? Iterating through the LC-table and the ACK-table to choose the max for each entry is a small task, even a mobile CPU does that in few micro seconds, I'd expect. Building up the connection and sending the data is much more expensive, so I wouldn't be concerned about that, or what do you have in mind? Do you want to add a hash to find out quickly whether something has changed? That is possible, but is it necessary? Or do you think about a completely other problem?
+Another remark to that suggestion: We should definitely keep the older timestamps, not the earlier. 
+
+III - What happens if all nodes got the message
+We could now delete all the messages from our local buffer which have reached all known nodes. We could also be lazy and only do that once the buffer is full, I don't think it makes a huge difference.
+What is missing for the receive_message is that we have to store the message in the local storage. Maybe we even have to run our replacement policy.
+
+Further remarks:
+The whole idea of adding and removing nodes from the net is missing in the description.
+
+Adding a new node: Copy the ACK-Table entries of the first node found in the network and expand botht tables with a new entry. 
+
+Removing nodes: The API user should have a way to set a timeout for single nodes. When a node has an entry in LC-table which is older than the timeout allow, the node is deleted from both table. That is useful because it makes all messages sent smaller, and it also makes more room in the local storages. But how long such a timeout should be is highly dependant on the application, therefore it should really be set by the client of the API.
+
+==========================================================================================
