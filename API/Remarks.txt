@@ -19,3 +19,11 @@ Adding a new node: Copy the ACK-Table entries of the first node found in the net
 Removing nodes: The API user should have a way to set a timeout for single nodes. When a node has an entry in LC-table which is older than the timeout allow, the node is deleted from both table. That is useful because it makes all messages sent smaller, and it also makes more room in the local storages. But how long such a timeout should be is highly dependant on the application, therefore it should really be set by the client of the API.
 
 ==========================================================================================
+Manuel:
+I answer:	Okay. I understood it wrong. makes more sense that way. But we need to talk about that again, for example if we have message 10 and message 12, we will have a 10 in the ACK table. So we can't share message 12 with the other nodes, can we?
+
+II answer:	You're right. We definitely should prioritize the tests for the length to build up a connection and sending messages as soon as we start, to reason about the performance.
+
+III answer:	Forgot about the local buffer. It makes more sense to delete it, since it's a very small task and we don't have to care about it later with the replacement.
+
+==========================================================================================
