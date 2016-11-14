@@ -5,6 +5,51 @@
 	% explain the figures in the text where you reference them. 
 		\subsection{API}
 		Jakob, Manuel
+			
+			Last Contact Table:
+			\begin{center}
+				\begin{tabular}{ | l | l |}
+					\hline
+					$N_{1}$ & $T_{1}$ \\ \hline
+					$N_{2}$ & $T_{2}$ \\ \hline
+					\vdots & \vdots \\ \hline
+					$N_{n}$ & $T_{n}$ \\ 
+					\hline
+				\end{tabular}
+			\end{center}
+			
+			ACK-Table:
+			\begin{center}
+				\begin{tabular}{ l | l | l | l | l | l |}
+					\multicolumn{5}{c}{Receiver}\\
+					\cline{2-6}
+					$\multirow{5}*{\rotatebox{90}{Sender}}$ & $\cellcolor[gray]{0.65}$ & $N_{1}$ & $N_{2}$ & $\hdots$ & $N_{n}$ \\ \cline{2-6}
+					& $N_{1}$ & $\cellcolor[gray]{0.65}$ &  &  $\hdots$ &  \\ \cline{2-6}
+					& $N_{2}$ &  & $\cellcolor[gray]{0.65}$ & $\hdots$ &  \\ \cline{2-6}
+					& $\vdots$ &  &  & $\ddots$ &   \\ \cline{2-6}
+					& $N_{n}$ & & & $\hdots$ & $\cellcolor[gray]{0.65}$ \\ \cline{2-6}
+				\end{tabular}
+			\end{center}
+			
+			Message:
+			\begin{center}
+				\begin{tabular}{ | l |}
+					\hline
+					Last Contact Table \\ \hline
+					ACK-Table \\ \hline
+					Content \\ \hline
+				\end{tabular}
+			\end{center}
+			
+			Acknowledgement:
+			\begin{center}
+				\begin{tabular}{ | l |}
+					\hline
+					Last Contact Table \\ \hline
+					ACK-Table \\ \hline
+				\end{tabular}
+			\end{center}
+			
 		
 		\subsection{Emergency App}
 		Claude, Alessandro
