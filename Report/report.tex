@@ -105,6 +105,7 @@
 	\maketitle
 	
 	\begin{abstract}
+		\input{abstract}
 	\end{abstract}
 	\section{Introduction}
 		Our message flooding API can be useful to many future projects that involve several Android devices which should be connected even without a working internet connection. For some applications, the API might simply provide an alternetive communication channel that can be used when the device does not have a connection to the internet, but for other applications it can be the core of the communication between several devices. \\
@@ -139,6 +140,8 @@
 			If the receiver's network is not connected to the sender's network the messages are buffered and will be sent to the receiver later when the receiver's and the sender's network are connected. The receiver is able to get as many messages as are stored in the buffer.\\
 			
 			When first starting the App the user has to enter his name and generate his public and private key. After generating the key the user is able to scan public keys from other members or provide his own public key for scanning. Upon scanning a new chat is displayed in the chat-list and a reminder appears to scan the public key of the chat partner. \\
+			
+			For group chats symmetric keys are used. Every chat will have an administrator who generates a symmetric key and can distribute the key to other group members.\\
 			
 			Pressing on a chat in the chat-list opens a chat to write and read messages.\\
 			
