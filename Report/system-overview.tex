@@ -4,7 +4,24 @@
 	% Use helpful figures such as~\rfig{example} and~\rfig{system-overview},
 	% explain the figures in the text where you reference them. 
 		\subsection{API}
-		Jakob, Manuel
+		The API will offer the following functionalities to clients:
+		\begin{itemize}
+			\item {Initialize network}
+			\item {Join network}
+			\item {Leave network}
+			\item {Broadcast message}
+			\item {Register receive message listener}
+		\end{itemize}
+		In this section, we discuss how we plan to support these functionalities. But before starting with that, we should have a look at
+		what a network is to us and how it is defined.\\
+		Our system is supposed to be fully symmetric, i.e. there is no device (node) in the network with a special task, all nodes execute the same code. In particular, all nodes can send and receive message at any point in time new nodes can join the network by extending it at any node that is already integrated in the network.\\
+		So, what is a network in our case? Let the pair $a(A,B)$ denote an established conection between node $A$ to node $B$. We consider the known network of a node $C$ to be the set of all nodes $N_i, (1 \leq i \leq \text{\# of nodes})$ for which holds:  \\
+		There is a chain of established connections for some $n$ and a given timeout $t$
+		\begin{displaymath}
+			a_0(N_{i},N_{j_0}) \circ a_1(N_{j_0},N_{j_1}) \circ \ldots \circ a_{n+1}(N_{i_n},C)
+		\end{displaymath}
+		such that $a_k$ happened before $a_{k+1}$ for all $k \leq n$ and $a_0$ is not older than the timeout $t$ allows. \\
+		Informally, the network as seen by a given device consits of all nodes whose signal could reach the device within the predefined timeout. \\
 			
 			Last Contact Table:
 			\begin{center}
