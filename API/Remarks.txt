@@ -33,3 +33,6 @@ On the System Overview:
 I dont understand the chain you explained while explaining the network of nodes. Is it maybe a bit too much with all these i's and j's? 
 
 ==========================================================================================
+Claude: 
+-Is our system really symmetric? What's even the definition for a symmetric system? 
+-I don't think that the definition for our network works. (for example if A knows B, B cannot know A) 
