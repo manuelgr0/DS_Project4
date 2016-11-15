@@ -5,14 +5,31 @@
 			Jakob, Manuel
 
 \begin{enumerate}
+% @Manu: Hey Manu, i schrib do gad ine was i ändere, wenns glese hesch und kei Iwänd hesch, bitte gad wieder lösche ;)
+
+% @Manu: Das item hani no hinzuegfüegt, will mer da bi de Milestones denn sicher bruchet
+\item Define all public function signatures of our API and hand it to the other group members
 \item Establish Peer-to-Peer connection with WiFi Direct
 \item Build data structures for LC-Table and ACK-Table
+% @Manu: Zwei neue items
+\item Implement network initialization with two nodes
+\item Write code for nodes to join an existing network
+
 \item Implement functions to update tables
 \item Build message and parse message
-\item Implement broadcast\_message
-\item Implement send\_message
-\item Implement receive\_message (with message listener)
+% @Manu: I würd do no kein gnaui Funktionenäme verwende, die müemer zerscht no definiere, also würdi do kei `Code' ine tue
+% OLD \item Implement broadcast\_message
+\item Implement message sending (broadcast)
+
+% @Manu: send_message - Bruchet mer da würklich? Inwiefern bringt üs da überhaup öpiis, wenn mer wüsset das e Nochricht nurzu eim mues? Verschicke tümers doch eh allne, damits so schnell wie möglich achunt. Und wie chömmer da speichere ohni dass mer üsen ACK-Table kaputt machet, bruchet mer en Zweite ACK-Table extra für da? I wär defür, das mer da weglönd, aber me chönds gern bespreche, je nochdem sötter mer au no di anderne froge was meinet.
+% OLD\item Implement send\_message
+
+% OLD: \item Implement receive\_message (with message listener)
+\item Implement message receiving (with message listener)
 \item Build data structure for local buffer
+% @Manu: Au no neu:
+\item Implement buffer entry replacement strategy
+\item Remove old nodes from network according to a timeout specified by the client
 \end{enumerate}
 
 
