@@ -25,6 +25,7 @@
 			
 			To implement the functionalities described at the beginning, we establish connections over WiFi Direct and use a few data structures. Since we use these data structures later in our overview, we will explain it now. \\
 
+% TODO: I think we should have a bulk of messages here, not a single message
 			A message sent between two nodes is composite with a Header containing the LC- and the ACK-Table, as well as the content of the message, shown in the figure below. \\
 
 		Message:
@@ -69,7 +70,6 @@ Each node in the network has a local Last Contact Table. This table has entries 
 
 The ACK-Table describes which Receiver nodes got a message from a particular Sender node. The table contains in the first column the Sender nodes and in the first row the Receiver nodes. Each entry in the table (except for the first row and the first column) contains a sequence number of the message from a Sender node, which the Receiver last received. \\
 Important to mention is, since the API is based on a decentralized system, that the table only shows the view seen by the owner of the table at a given time. \\
-
 			ACK-Table:
 			\begin{center}
 				\begin{tabular}{ l | l | l | l | l | l |}
@@ -82,6 +82,16 @@ Important to mention is, since the API is based on a decentralized system, that 
 					& $N_{n}$ & & & $\hdots$ & $\cellcolor[gray]{0.65}$ \\ \cline{2-6}
 				\end{tabular}
 			\end{center}
+	
+Now that we have discussed the involved data structures and how we define network, we can have a look at the actual implementation plan. \\
+To \textbf{initialize} the network, we have to $\ldots$ (OPEN QUESTION: Distributed initializing and recursive merging? Or, single root and recursive cloning? Or initializing phase to connect all initially known devices?) \\
+\textbf{Joining a network} for a single node is done by connecting with a node in the netwok and receving its LC- and ACK-table. Then we can extend both tables with a new node, for the entries in the cell we just copy the data from the node we connected to. \\ 
+(OPEN QUESTION: Do we want to allow merging of networks? This is also dependant on the open question above.) \\
+\textbf{Leaving a network} is not reall necessary for correctness, but it can make the whole network more efficient if nodes notify the network when they are not interested in the messages anymore. (OPEN QUESTION: Special signal that tells all nodes to delete that node? Or, setting the seq number to $\infty$ and only removing it after some time? Other ideas?)\\
+\textbf{Broadcasting} a message (is also an OPEN QUESTION but here is my suggestions,) is done by adding the message to the local buffer and then invoking the send mechanism. The send mechanism goes through the local buffer and determines the messages which have not reached its neighbours. Neighbours are all those nodes which are currently visible. If there are neighbours which do not have all the locally buffered messages, then we send it all missing messages.\\
+The \textbf{message listener} provided by the client will be called whenever a new message arrived. Right after calling the listener in a new thread, we can mark in the ACK-Table that we received that message.  \\
+
+
 			
 		
 		\subsection{Emergency App}
