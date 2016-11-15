@@ -88,7 +88,7 @@ Important to mention is, since the API is based on a decentralized system, that 
 		Claude, Alessandro \\
 The main idea of this application is to provide emergency services even if a cellular connection cannot be directly established. \\
 Users have to enter some personal data (name, address, birth date, insurance number (optional), allergies (optional) etc.) when launching the App. \\
-Whenever a user gets into an unpleasent situation, he/she can set off an emergency message via the App (Graphic - Button Press). \\
+Whenever a user gets into an unpleasant situation, he/she can set off an emergency message via the App (Graphic - Button Press). \\
 The message contains the user's personal data, as well as his/her GPS coordinates at the time the emergency message was successfully sent. \\
 Emergency App takes care of forwarding the message to a PoH (Point of Help). If cellular network is available, the emergency message is set off directly. \\
 What if there is no direct connection? As soon as another user of the App is reachable via the WiFi Direct API, the emergency message is sent to that user who immediately gets notified that someone needs help. In case the new user is capable of a network connection, the message is sent to a PoH via his/her network connection. If not, the message is forwarded to another reachable user of the app. The message propagates across the growing chain of WiFi Direct connections and is flooded across the resulting network until a direct connection to a PoH can be established (SMS, TCP segment). The PoH then acks the message and the ACK is propagated along the network of users to stop the flooding and tell the victim that help is on the way. \\
