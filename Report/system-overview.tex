@@ -21,8 +21,39 @@
 			a_0(N_{i},N_{j_0}) \circ a_1(N_{j_0},N_{j_1}) \circ \ldots \circ a_{n+1}(N_{i_n},C)
 		\end{displaymath}
 		such that $a_k$ happened before $a_{k+1}$ for all $k \leq n$ and $a_0$ is not older than the timeout $t$ allows. \\
-		Informally, the network as seen by a given device consits of all nodes whose signal could reach the device within the predefined timeout. \\
+		Informally, the network as seen by a given device consits of all nodes whose signal could reach the device within the predefined timeout. \\ \\
 			
+			To implement the functionalities described at the beginning, we establish connections over WiFi Direct and use a few data structures. Since we use these data structures later in our overview, we will explain it now. \\
+
+			A message sent between two nodes is composite with a Header containing the LC- and the ACK-Table, as well as the content of the message, shown in the figure below. \\
+
+		Message:
+			\begin{center}
+				\begin{tabular}{ | l |}
+					\hline
+					Last Contact Table \\ \hline
+					ACK-Table \\ \hline
+					Content \\ \hline
+				\end{tabular}
+			\end{center}
+
+
+As a second data structure we have the Acknowledgement, seen below, which is just a message with no content. \\
+
+
+			Acknowledgement:
+			\begin{center}
+				\begin{tabular}{ | l |}
+					\hline
+					Last Contact Table \\ \hline
+					ACK-Table \\ \hline
+				\end{tabular}
+			\end{center}
+			
+In the two figures above we showed the form of the messages, which being sent. In their headers, they contain two tables, namely the Last Contact Table and the ACK-Table. We will start to show the Last Contact Table. \\
+
+Each node in the network has a local Last Contact Table. This table has entries in form of ($N_{i}$, $T_{i}$), where N are nodes in the network and T are the corresponding timestamps. The timestamp represents the time when the node was last present in the network. That means that the timestamp is updataed each time the owner node hears from another node or it updates it's own LC-Table with one it got from another node. \\
+
 			Last Contact Table:
 			\begin{center}
 				\begin{tabular}{ | l | l |}
@@ -35,6 +66,10 @@
 				\end{tabular}
 			\end{center}
 			
+
+The ACK-Table describes which Receiver nodes got a message from a particular Sender node. The table contains in the first column the Sender nodes and in the first row the Receiver nodes. Each entry in the table (except for the first row and the first column) contains a sequence number of the message from a Sender node, which the Receiver last received. \\
+Important to mention is, since the API is based on a decentralized system, that the table only shows the view seen by the owner of the table at a given time. \\
+
 			ACK-Table:
 			\begin{center}
 				\begin{tabular}{ l | l | l | l | l | l |}
@@ -45,25 +80,6 @@
 					& $N_{2}$ &  & $\cellcolor[gray]{0.65}$ & $\hdots$ &  \\ \cline{2-6}
 					& $\vdots$ &  &  & $\ddots$ &   \\ \cline{2-6}
 					& $N_{n}$ & & & $\hdots$ & $\cellcolor[gray]{0.65}$ \\ \cline{2-6}
-				\end{tabular}
-			\end{center}
-			
-			Message:
-			\begin{center}
-				\begin{tabular}{ | l |}
-					\hline
-					Last Contact Table \\ \hline
-					ACK-Table \\ \hline
-					Content \\ \hline
-				\end{tabular}
-			\end{center}
-			
-			Acknowledgement:
-			\begin{center}
-				\begin{tabular}{ | l |}
-					\hline
-					Last Contact Table \\ \hline
-					ACK-Table \\ \hline
 				\end{tabular}
 			\end{center}
 			
