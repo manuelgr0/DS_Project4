@@ -27,3 +27,7 @@ II answer:	You're right. We definitely should prioritize the tests for the lengt
 III answer:	Forgot about the local buffer. It makes more sense to delete it, since it's a very small task and we don't have to care about it later with the replacement.
 
 ==========================================================================================
+Claude:
+-Is our system really symmetric? What's even the definition for a symmetric system?
+-I don't think that the definition for our network works. (for example if A knows B, B cannot know A)
+==========================================================================================
