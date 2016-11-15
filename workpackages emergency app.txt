@@ -1,0 +1,4 @@
+1. Main Activity with "request help" button. Button is only clickable if personal information is entered and location services are turned on. On button click the user can select what kind of emergency case it is.
+2. Settings Activity which stores personal information such as Name, insurance numbers, allergies, etc.
+3. Notification Activity which shows a relayed emergency request on the users phone including walk directions to find the requester.
+4. A webserver which distributes the request to the specific emergency services in charge.
