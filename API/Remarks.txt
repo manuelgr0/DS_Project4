@@ -1,5 +1,5 @@
 ==========================================================================================
-K�bi:
+Köbi:
 I - ACK Table:
 Each entry is a number representing the packet number that is expected next, not a simple boolean value. The entry 10 in the cell (x,y) means that y received packets 0-9 from sender x. I assume we want to enumerate all packets anyway to handle reordering of packets.
 
@@ -36,3 +36,15 @@ I dont understand the chain you explained while explaining the network of nodes.
 Claude: 
 -Is our system really symmetric? What's even the definition for a symmetric system? 
 -I don't think that the definition for our network works. (for example if A knows B, B cannot know A) 
+
+
+===========================================================================================
+Köbi:
+
+Yes I believe our system is symmetric, but I'm not sure if this is a well defined expression for distributed systems. But I guess we should discuss, if we want to make it fully symmetric or not, I was thinking about a symmetric system where all nodes have the same role, but maybe that's not the best solution, I'm interersted to hear :)
+
+About the chain: 
+What it is supposed to mean: Imagine we draw all the nodes on a paper, and then we draw a line between two nodes for each established connection between two nodes. Note that the connection is not directed, an established connection is always in both directions. Now we start at our node and see which nodes we can reach thorugh these lines. The union of those will form our network. Almost. We can have paths which are not possible becuase of the time when it happened. So we should only allow to take an edge, when all previous edges on the path have a timestamp earlier than the new edge. 
+This is a formal way to describe, whose nodes "information" is actually able to reach us, in other words, whose nodes have touched a LC-table that we could read. While writing it, it didn't seem to be complicated, but maybe I got it wrong. Now I'm too tired to check again, but I will in morning.
+
+@Claude, why is it that (if A knows B, B cannot know A), I can't see it. If that is the case, then my definition is definitely wrong. 
