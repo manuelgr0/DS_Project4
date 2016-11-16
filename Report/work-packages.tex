@@ -49,13 +49,14 @@
 		\subsection{Chat App}
 			Joel, Pascal
 			\begin{enumerate}
-				\item MainActivity: Clickable list of chats ordered by activity with names and unread message counter overflow menu with "Preferences", "Show Key", "Add Chat", "Go Offline"
-				\item Storing chats, address book and own keys in files when service is shut down
+				\item Create a MainActivity with clickable list of chats ordered by activity. Each chat should display how many messages are unread.
+				\item Add a overflow menu with "Preferences", "Show Key", "Add Chat", "Go Offline" buttons.
+				\item Implement a service that handles message state, address book state, receiving messages including decryption, notification to be started which starts on app start if not running.
+				\item Chat, address book and own keys have to be stored in separate files, when the service is shut down.
 				\item ChatActivity: Chat window, with message list left and right aligned, depending on sender, ordered descending in age
-				\item Using ZXing library make two activities, one for displaying keys and one for scanning them
-				\item Preferences, for sound and vibration and new key generation
-				\item Service that handles message state, address book state, receiving messages including decryption, notification to be started on app start
-				\item Generating public-private key pair with javax.crypto
-				\item Activity for initial key generation and name entry
+				\item Add an activity to generate a public-private key pair with java.crypto.
+				\item Using ZXing library make two activities, one for displaying keys and one for scanning them.
+				\item Add and activity for initial key generation and name entry.
+				\item In preference menu add two options to enable sound and vibration for notification. Furthermore add an option to generate a new key.
 			\end{enumerate}
 			
