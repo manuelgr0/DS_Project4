@@ -1,87 +1,86 @@
 % This is the core of the proposal.
-	% It is where you spell out your technical plan and explain the project design.
-	% Expected evaluation/demonstration issues would also be addressed in this section.
-	% Use helpful figures such as~\rfig{example} and~\rfig{system-overview},
-	% explain the figures in the text where you reference them. 
-		\subsection{API}
-		The API will offer the following functionalities to clients:
-		\begin{itemize}
-			\item {Initialize network}
-			\item {Join network}
-			\item {Leave network}
-			\item {Broadcast message}
-			\item {Register receive message listener}
-		\end{itemize}
-		In this section, we discuss how we plan to support these functionalities. But before starting with that, we should have a look at
-		what a network is to us and how it is defined.\\
-		Our system is supposed to be fully symmetric, i.e. there is no device (node) in the network with a special task, all nodes execute the same code. In particular, all nodes can send and receive message at any point in time new nodes can join the network by extending it at any node that is already integrated in the network.\\
-		So, what is a network in our case? Let the pair $a(A,B)$ denote an established connection between node $A$ and $B$. We consider the known network of a node $C$ to be the set of all nodes $N_i, (1 \leq i \leq \text{\# of nodes})$ for which holds:  \\
-		There is a chain of established connections for some $n$ and a given timeout $t$
-		\begin{displaymath}
-			a_0(N_{i},N_{j_0}) \circ a_1(N_{j_0},N_{j_1}) \circ \ldots \circ a_{n+1}(N_{j_n},C)
-		\end{displaymath}
-		such that $a_k$ happened before $a_{k+1}$ for all $k \leq n$ and $a_0$ is not older than the timeout $t$ allows. \\
-		Informally, the network as seen by a given device $D$ consists of all nodes whose signal could reach the device within the predefined timeout. \\ \\
+% It is where you spell out your technical plan and explain the project design.
+% Expected evaluation/demonstration issues would also be addressed in this section.
+% Use helpful figures such as~\rfig{example} and~\rfig{system-overview},
+% explain the figures in the text where you reference them. 
+\subsection{API}
+	The API will offer the following functionalities to clients:
+	\begin{itemize}
+		\item {Initialize network}
+		\item {Join network}
+		\item {Leave network}
+		\item {Broadcast message}
+		\item {Register receive message listener}
+	\end{itemize}
+	In this section, we discuss how we plan to support these functionalities. But before starting with that, we should have a look at	what a network is to us and how it is defined.\\
+	Our system is supposed to be fully symmetric, i.e. there is no device (node) in the network with a special task, all nodes execute the same code. In particular, all nodes can send and receive message at any point in time new nodes can join the network by extending it at any node that is already integrated in the network.\\
+	So, what is a network in our case? Let the pair $a(A,B)$ denote an established connection between node $A$ and $B$. We consider the known network of a node $C$ to be the set of all nodes $N_i, (1 \leq i \leq \text{\# of nodes})$ for which holds:  \\
+	There is a chain of established connections for some $n$ and a given timeout $t$
+	\begin{displaymath}
+		a_0(N_{i},N_{j_0}) \circ a_1(N_{j_0},N_{j_1}) \circ \ldots \circ a_{n+1}(N_{j_n},C)
+	\end{displaymath}
+	such that $a_k$ happened before $a_{k+1}$ for all $k \leq n$ and $a_0$ is not older than the timeout $t$ allows. \\
+	Informally, the network as seen by a given device $D$ consists of all nodes whose signal could reach the device within the predefined timeout. \\ \\
 			
-			To implement the functionalities described at the beginning, we establish connections over WiFi Direct and use a few data structures. Since we use these data structures later in our overview, we will explain it now. \\
+	To implement the functionalities described at the beginning, we establish connections over WiFi Direct and use a few data structures. Since we use these data structures later in our overview, we will explain it now. \\
 
 % TODO: I think we should have a bulk of messages here, not a single message
-			A message sent between two nodes is composite with a Header containing the LC- and the ACK-Table, as well as the content of the message, shown in the figure below. \\
+	A message sent between two nodes is composite with a Header containing the LC- and the ACK-Table, as well as the content of the message, shown in the figure below. \\
 
-		Message:
-			\begin{center}
-				\begin{tabular}{ | l |}
-					\hline
-					Last Contact Table \\ \hline
-					ACK-Table \\ \hline
-					Content \\ \hline
-				\end{tabular}
-			\end{center}
+	Message:
+		\begin{center}
+			\begin{tabular}{ | l |}
+				\hline
+				Last Contact Table \\ \hline
+				ACK-Table \\ \hline
+				Content \\ \hline
+			\end{tabular}
+		\end{center}
 
 
 As a second data structure we have the Acknowledgement, seen below, which is just a message with no content. \\
 
 
-			Acknowledgement:
-			\begin{center}
-				\begin{tabular}{ | l |}
-					\hline
-					Last Contact Table \\ \hline
-					ACK-Table \\ \hline
-				\end{tabular}
-			\end{center}
+	Acknowledgement:
+		\begin{center}
+			\begin{tabular}{ | l |}
+				\hline
+				Last Contact Table \\ \hline
+				ACK-Table \\ \hline
+			\end{tabular}
+		\end{center}
 			
 In the two figures above we showed the form of the messages, which being sent. In their headers, they contain two tables, namely the Last Contact Table and the ACK-Table. We will start to show the Last Contact Table. \\
 
 Each node in the network has a local Last Contact Table. This table has entries in form of ($N_{i}$, $T_{i}$), where N are nodes in the network and T are the corresponding timestamps. The timestamp represents the time when the node was last present in the network. That means that the timestamp is updataed each time the owner node hears from another node or it updates it's own LC-Table with one it got from another node. \\
 
-			Last Contact Table:
-			\begin{center}
-				\begin{tabular}{ | l | l |}
-					\hline
-					$N_{1}$ & $T_{1}$ \\ \hline
-					$N_{2}$ & $T_{2}$ \\ \hline
-					\vdots & \vdots \\ \hline
-					$N_{n}$ & $T_{n}$ \\ 
-					\hline
-				\end{tabular}
-			\end{center}
+	Last Contact Table:
+		\begin{center}
+			\begin{tabular}{ | l | l |}
+				\hline
+				$N_{1}$ & $T_{1}$ \\ \hline
+				$N_{2}$ & $T_{2}$ \\ \hline
+				\vdots & \vdots \\ \hline
+				$N_{n}$ & $T_{n}$ \\ 
+				\hline
+			\end{tabular}
+		\end{center}
 			
 
 The ACK-Table describes which Receiver nodes got a message from a particular Sender node. The table contains in the first column the Sender nodes and in the first row the Receiver nodes. Each entry in the table (except for the first row and the first column) contains a sequence number of the message from a Sender node, which the Receiver last received. \\
 Important to mention is, since the API is based on a decentralized system, that the table only shows the view seen by the owner of the table at a given time. \\
-			ACK-Table:
-			\begin{center}
-				\begin{tabular}{ l | l | l | l | l | l |}
-					\multicolumn{5}{c}{Receiver}\\
-					\cline{2-6}
-					$\multirow{5}*{\rotatebox{90}{Sender}}$ & $\cellcolor[gray]{0.65}$ & $N_{1}$ & $N_{2}$ & $\hdots$ & $N_{n}$ \\ \cline{2-6}
-					& $N_{1}$ & $\cellcolor[gray]{0.65}$ &  &  $\hdots$ &  \\ \cline{2-6}
-					& $N_{2}$ &  & $\cellcolor[gray]{0.65}$ & $\hdots$ &  \\ \cline{2-6}
-					& $\vdots$ &  &  & $\ddots$ &   \\ \cline{2-6}
-					& $N_{n}$ & & & $\hdots$ & $\cellcolor[gray]{0.65}$ \\ \cline{2-6}
-				\end{tabular}
-			\end{center}
+	ACK-Table:
+		\begin{center}
+			\begin{tabular}{ l | l | l | l | l | l |}
+				\multicolumn{5}{c}{Receiver}\\
+				\cline{2-6}
+				$\multirow{5}*{\rotatebox{90}{Sender}}$ & $\cellcolor[gray]{0.65}$ & $N_{1}$ & $N_{2}$ & $\hdots$ & $N_{n}$ \\ \cline{2-6}
+				& $N_{1}$ & $\cellcolor[gray]{0.65}$ &  &  $\hdots$ &  \\ \cline{2-6}
+				& $N_{2}$ &  & $\cellcolor[gray]{0.65}$ & $\hdots$ &  \\ \cline{2-6}
+				& $\vdots$ &  &  & $\ddots$ &   \\ \cline{2-6}
+				& $N_{n}$ & & & $\hdots$ & $\cellcolor[gray]{0.65}$ \\ \cline{2-6}
+			\end{tabular}
+		\end{center}
 	
 Now that we have discussed the involved data structures and how we define network, we can have a look at the actual implementation plan. \\
 To \textbf{initialize} the network, we have to $\ldots$ (OPEN QUESTION: Distributed initializing and recursive merging? Or, single root and recursive cloning? Or initializing phase to connect all initially known devices?) \\
@@ -94,8 +93,8 @@ The \textbf{message listener} provided by the client will be called whenever a n
 
 			
 		
-		\subsection{Emergency App}
-		Claude, Alessandro \\
+\subsection{Emergency App}
+Claude, Alessandro \\
 The main idea of this application is to provide emergency services even if a cellular connection cannot be directly established. \\
 Users have to enter some personal data (name, address, birth date, insurance number (optional), allergies (optional) etc.) when launching the App. \\
 Whenever a user gets into an unpleasant situation, he/she can set off an emergency message via the App (Graphic - Button Press). \\
@@ -105,9 +104,9 @@ What if there is no direct connection? As soon as another user of the App is rea
 Moreover, users on the WiFi direct chain get an estimation of the cardinal direction of where the emergency message was set off relative to their position in order to administer first aid.
 However, if location services are not available to the victim (i.e. due to being stuck in a tunnel or cave), the first node on the emergency chain which can determine its GPS location puts it onto the message. This gives a reasonable approximation of the victim's location. \\
 		
-		\subsection{Chat App}
-		Joel, Pascal\\
-			The Chat App ensures end to end encrypted messages via peer-to-peer connection through the flooding API. Encrypting and Decrypting messages is done public key cryptography. The keys are generated by the user and shared by QR codes that have to be scanned from the receiver.\\
-			If the receiver's network is not connected to the sender's network the messages are buffered and will be sent to the receiver later when the receiver's and the sender's network are connected. The receiver is able to get as many messages as are stored in the buffer.\\
-			When first starting the App the user has to enter his name and generate his public and private key. After generating the key the user is able to scan public keys from other members or provide his own public key for scanning. Upon scanning a new chat is displayed in the chat-list and a reminder appears to scan the public key of the chat partner. \\
-			Pressing on a chat in the chat-list opens a chat to write and read messages.\\
+\subsection{Chat App}
+Joel, Pascal\\
+The Chat App ensures end to end encrypted messages via peer-to-peer connection through the flooding API. Encrypting and Decrypting messages is done public key cryptography. The keys are generated by the user and shared by QR codes that have to be scanned from the receiver.\\
+If the receiver's network is not connected to the sender's network the messages are buffered and will be sent to the receiver later when the receiver's and the sender's network are connected. The receiver is able to get as many messages as are stored in the buffer.\\
+When first starting the App the user has to enter his name and generate his public and private key. After generating the key the user is able to scan public keys from other members or provide his own public key for scanning. Upon scanning a new chat is displayed in the chat-list and a reminder appears to scan the public key of the chat partner. \\
+Pressing on a chat in the chat-list opens a chat to write and read messages.\\

@@ -1,12 +1,12 @@
-Our message flooding API can be useful to many future projects that involve several Android devices which should be connected even without a working internet connection. For some applications, the API might simply provide an alternetive communication channel that can be used when the device does not have a connection to the internet, but for other applications it can be the core of the communication between several devices. \\
-		A simple example application will be distributed along with the API as a demo. The demo is an SOS forwarding app that uses our API to propagate an emergency call between devices which are not connected with the internet, until it reaches a device with a working internet connection that can send the call to a webserver. \\
-		Of course the full power of the API will only be visible in more complex systems. In principle, the API will be powerful enough to support a document editor which is synchronized over many users, all without the need of a working internet connection. That could be interesting for a military office outside, but also for a working team that wants to keep working on the same files while travelling together in an airplane. \\
-		To demonstrate how the API is used for more complex applications, we will develop a messenger app. The app will support multiple secure chats that users can join. \\
-		As the name suggest, the API provides nothing but a message flooding interface, therefore most of the copmplexitiy will be in the client's code outside of the API, namely in the client's application. However, the API solves most of the problems of a ditributed systems and hides them from the client. The features available in the API are:
-		\begin{itemize}
-        	\item {\bf Dynamic local network}: Devices can form a local network and new devices can enter it dynamically.
-        	\item {\bf Message flooding}: A device can easily send a message to all other devices in the local network.
-        	\item {\bf Message buffering}: A device which loses connection to the other devices will receive all sent messages when it connects to the local network again.
-        	\item {\bf Message reordering}: The ordering of messages sent by one device is preserved on the receiver side.
-		\end{itemize}
-		% TODO: Describe similar projects like firechat and serval project
+Our message flooding API can be useful to many future projects that involve several Android devices which should be connected even without a working internet connection. For some applications, the API might simply provide an alternative communication channel that can be used when the device does not have a connection to the internet, but for other applications it can be the core of the communication between several devices. \\
+A simple example application will be distributed along with the API as a demo. The demo is an SOS forwarding app that uses our API to propagate an emergency call between devices which are not connected with the internet, until it reaches a device with a working internet connection that can send the call to a webserver. \\
+Of course the full power of the API will only be visible in more complex systems. In principle, the API will be powerful enough to support a document editor which is synchronized over many users, all without the need of a working internet connection. That could be interesting for a military office outside, but also for a working team that wants to keep working on the same files while traveling together in an airplane.\\
+To demonstrate how the API is used for more complex applications, we will develop a messenger app. The app will support multiple secure chats that users can join. \\
+As the name suggest, the API provides nothing but a message flooding interface, therefore most of the complexity will be in the client's code outside of the API, namely in the client's application. However, the API solves most of the problems of a distributed systems and hides them from the client. The features available in the API are:
+\begin{itemize}
+	\item {\bf Dynamic local network}: Devices can form a local network and new devices can enter it dynamically.
+	\item {\bf Message flooding}: A device can easily send a message to all other devices in the local network.
+	\item {\bf Message buffering}: A device which loses connection to the other devices will receive all sent messages when it connects to the local network again.
+	\item {\bf Message reordering}: The ordering of messages sent by one device is preserved on the receiver side.
+\end{itemize}
+% TODO: Describe similar projects like firechat and serval project

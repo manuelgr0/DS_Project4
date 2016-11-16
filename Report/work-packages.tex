@@ -37,26 +37,26 @@
 
 
 		
-		\subsection{Emergency App}
-			Claude, Alessandro
-			\begin{enumerate}
-				\item Main Activity with "request help" button. Button is only clickable if personal information is entered and location services are turned on. On button click the user can select what kind of emergency case it is.
-				\item Settings Activity which stores personal information such as Name, insurance numbers, allergies, etc.
-				\item Notification Activity which shows a relayed emergency request on the users phone including walk directions to find the requester.
-				\item A webserver which distributes the request to the specific emergency services in charge.
-			\end{enumerate}
+\subsection{Emergency App}
+	Claude, Alessandro
+	\begin{enumerate}
+		\item Main Activity with "request help" button. Button is only clickable if personal information is entered and location services are turned on. On button click the user can select what kind of emergency case it is.
+		\item Settings Activity which stores personal information such as Name, insurance numbers, allergies, etc.
+		\item Notification Activity which shows a relayed emergency request on the users phone including walk directions to find the requester.
+		\item A webserver which distributes the request to the specific emergency services in charge.
+	\end{enumerate}
 		
-		\subsection{Chat App}
-			Joel, Pascal
-			\begin{enumerate}
-				\item Create a MainActivity with clickable list of chats ordered by activity. Each chat should display how many messages are unread.
-				\item Add a overflow menu with "Preferences", "Show Key", "Add Chat", "Go Offline" buttons.
-				\item Implement a service that handles message state, address book state, receiving messages including decryption, notification to be started which starts on app start if not running.
-				\item Chat, address book and own keys have to be stored in separate files, when the service is shut down.
-				\item ChatActivity: Chat window, with message list left and right aligned, depending on sender, ordered descending in age
-				\item Add an activity to generate a public-private key pair with java.crypto.
-				\item Using ZXing library make two activities, one for displaying keys and one for scanning them.
-				\item Add and activity for initial key generation and name entry.
-				\item In preference menu add two options to enable sound and vibration for notification. Furthermore add an option to generate a new key.
-			\end{enumerate}
+\subsection{Chat App}
+	Joel, Pascal
+	\begin{enumerate}
+		\item Create a MainActivity with clickable list of chats ordered by activity. Each chat should display how many messages are unread.
+		\item Add a overflow menu with "Preferences", "Show Key", "Add Chat", "Go Offline" buttons.
+		\item Implement a service that handles message state, address book state, receiving messages including decryption, notification to be started which starts on app start if not running.
+		\item Chat, address book and own keys have to be stored in separate files, when the service is shut down.
+		\item ChatActivity: Chat window, with message list left and right aligned, depending on sender, ordered descending in age
+		\item Add an activity to generate a public-private key pair with java.crypto.
+		\item Using ZXing library make two activities, one for displaying keys and one for scanning them.
+		\item Add and activity for initial key generation and name entry.
+		\item In preference menu add two options to enable sound and vibration for notification. Furthermore add an option to generate a new key.
+	\end{enumerate}
 			
