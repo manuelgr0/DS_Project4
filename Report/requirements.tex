@@ -1,5 +1,3 @@
-Joel\\
-
 Several choices have to be made that limit the reach of our application, in order to keep the project simple enough for the given time frame. Perhaps the choice that limits us most is using the Wi-Fi Peer-to-Peer API in Android. It constrains us to devices that have at least Android 4 (API level 14) installed and that have hardware capable of Wi-Fi Direct communication.\cite{P2PAPIGuide}\\
 For reading and generating QR codes we will use the ZXing project\cite{ZXing}. We will prompt user to install the ZXing Barcode Scanner app if not already available. It's installation size is in the neighbourhood of 1MB depending on the device, so the size is not a problem. The app requires API level 16, access to the Google Play Store and of course a device with a camera. However we provide an alternative, if somewhat arduous, method of copying the public keys by typing them in manually.\\
 Beyond that we will use only standard Java and Android libraries so no further limitations apply to the system software.\\
@@ -13,5 +11,3 @@ ODER\\
 We will develop three apps, one being a wrapper around the core networking service, with a simple interface to enter some configuration details. The emergency app and the chat app are going to use an API to access network functionality from the first. Each app individually will be rather lightweight so storage concerns should be fairly insignificant since we don't include much audiovisual content in any of these components. In case the users wish to use one app with one group of people and the other with another, they will have to reconfigure their network association in the wrapper app repeatedly.\\
 
 REDEWTNE\\
-
-
