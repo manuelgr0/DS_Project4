@@ -55,7 +55,7 @@ As a second data structure we have the Acknowledgement, seen below, which is jus
 			
 In the two figures above we showed the form of the messages, which are being sent. In their headers, they contain two tables, namely the Last Contact Table and the ACK-Table. We start by explaining the Last Contact Table. \\
 
-Each node in the network has a local Last Contact Table. This table has entries in form of ($N_{i}$, $T_{i}$), where N are nodes in the network and T are the corresponding timestamps. The timestamp represents the time when the node was last present in the network. That means that the timestamp is updated each time the owner node hears from another node or it updates it's own LC-Table with one it got from another node. \\
+Each node in the network has a local Last Contact Table. This table has entries in form of ($N_{i}$, $T_{i}$), where N are nodes in the network and T are the corresponding timestamps. The timestamp represents the time when the node was last present in the network. That means that the timestamp is updated each time the owner node hears from another node and updates its LC-Table with the earlier timestamps. \\
 
 	Last Contact Table:
 		\begin{center}
