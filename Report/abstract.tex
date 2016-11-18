@@ -1,15 +1,9 @@
-Again, it's this time of the year, when all the large festivals and parades are. It's this time, when all of us give in on one of these and go there, like every year. 
-You go there with a few friends and soon enough you will loose one of them, because the crowd is just too big and too loud. Every one of us knows this situation, right? \\
-It's this situation when you really need to use your mobile phone, but ending up being annoyed about the absence of ANY reception. \\
+It's that time of the year again, when all the large festivals and parades happen. It's the time, when all of us give in to one of them and go there, like every year. 
+You go there with a few friends and soon enough you will lose one of them, because the crowd is just too big and too loud. Every one of us knows this situation, right? \\
+It's in this situation when you really need to use your mobile phone, but ending up being annoyed at the absence of ANY reception. \\
 So that's the point where we started... \\
 
-We want a messaging system to work, even if you can't reach your friends over the internet. We also not only wanted to program a messaging app for that purpose, but rather go a step further and build an API to provide these functionalities to programmers, so they can develop their own apps with even different approaches than usual. \\
-
-Our approach to build such a network of nodes in an usable range for mobile devices, is to use WiFi Direct. The API will not forward the messages to a server, it broadcasts the messages to all nodes. This gives us the highest possibility to get a message to a node without any reception. \\
-
-So far, so good. But it's not finished yet. There is a lot more stuff needed than just broadcasting a message through a network of devices. The API should allow a dynamic network structure, which means at any time a node can leave or join the network, it also should allow a kind of buffering the messages to allow reaching nodes which are not reachable for the network at that moment. This leads to a lot of challenging problems with replacement orderings, timeouts and so forth... \\
-
----------------------------------------------------------------------------\\
-TODO: Write here if i forgot something.... !! \\
-
-----------------------------------------------------------------------------
+We want a messaging system to work, even if you can't reach your friends over the internet. We did not just want to program a messaging app for that purpose, but rather go a step further and build an API to provide these functionalities to programmers, so they can develop their own apps with even different approaches than usual. \\
+To demonstrate that our API is usable not just for the messaging system but has more general applicability we also build a second app which aims to deliver an emergency message to a server in the general Internet, using any connection another node in the network may have available. \\
+Our approach to build such a network of nodes in a usable range for mobile devices, is to use WiFi Direct. The API will not forward the messages to a server, it broadcasts them to all nodes. This gives us the highest possibility to get a message to a node without any reception. \\
+So far, so good. But it's not finished yet. There is a lot more stuff needed other than just broadcasting a message through a network of devices. The API should allow a dynamic network structure, which means at any time a node can leave or join the network, it must also buffer the messages to allow reaching nodes which are unreachable for the network at that moment. This leads to a lot of challenging problems with replacement orderings, timeouts and so forth... \\
