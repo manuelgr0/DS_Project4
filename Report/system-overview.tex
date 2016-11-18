@@ -14,7 +14,7 @@
 	
 	In this section, we discuss how we plan to support these functionalities. But before starting with that, we should have a look at	what a network is to us and how it is defined.\\
 	\subsubsection{Definition of a network}
-	Our system is supposed to be fully symmetric, i.e. there is no device (node) in the network with a special task, all nodes execute the same code. In particular, all nodes can send and receive message at any point in time. New nodes can join the network by extending it at any node that is already integrated in the network. Furthermore, seperatly created networks should be able to be merged into one network.\\
+	Our system is supposed to be fully symmetric, i.e. there is no device (node) in the network with a special task, all nodes execute the same code. In particular, all nodes can send and receive messages at any point in time. New nodes can join the network by extending it at any node that is already integrated in the network. Furthermore, separately created networks should be able to be merged into one network.\\
 	To define our network accurately, let the ordered pair $a(A,B)$ denote an established connection (using WiFi Direct) between node $A$ and $B$. Each such pair is associated with the timestamp when the connection establishment happened. There will usually be many such establishments with different timestamps that involve the same two nodes, because the nodes are constantly building up and dropping connections to the nodes in reachable distance. We consider the known network of a node $C$ to be the set of all nodes $N_i, (1 \leq i \leq \text{\# of nodes})$ for which holds:  \\
 	There is a chain of established connections for some $n$ and a given timeout $t$
 	\begin{displaymath}
@@ -28,7 +28,7 @@
 
 	A message sent between two nodes is composite with a Header containing the LC- and the ACK-Table, as well as the content of a number of messages, shown in the figure below. \\
 
-	With Messages:
+	Message:
 		\begin{center}
 			\begin{tabular}{ | l |}
 				\hline
@@ -73,6 +73,7 @@ When we filter out nodes from the LC-table which are older than a specified time
 
 The ACK-Table describes which Receiver nodes got a message from a particular Sender node. The table contains in the first column the Sender nodes and in the first row the Receiver nodes. Each entry in the table (except for the first row and the first column) contains a sequence number of the message from a Sender node, which the Receiver last received. \\
 Important to mention is, since the API is based on a decentralized system, that the table only shows the view seen by the owner of the table at a given time. \\
+
 	ACK-Table:
 		\begin{center}
 			\begin{tabular}{ l | l | l | l | l | l |}
@@ -89,11 +90,11 @@ Important to mention is, since the API is based on a decentralized system, that 
 	
 	\subsubsection{Implementation}
 Now that we have discussed the involved data structures and how we define the term network, we can have a look at the actual implementation plan. Devices (nodes) establish connections over WiFi Direct and the protocol we use to communicate will be TCP.\\
-To \textbf{initialize} the network, we have to create an ACK- and a LC-table with only our own entry. Then we simply contact other nodes and perform a merge of the tables whenever we encounter tables with more entries. \\
+To \textbf{initialize} the network, we have to create an ACK- and a LC-table with only our own entry. Then we simply contact other nodes and perform a merge of the tables whenever we encounter tables with different entries. \\
 \textbf{Joining a network} for a single node is basically just initializing the network as if it was new. However, we might want to ask around for old messages that the other nodes have still stored in their local buffers. \\ 
 \textbf{Broadcasting} a message is done by adding the message to the local buffer and then invoking the send mechanism. The send mechanism goes through the local buffer and determines the messages which have not reached its neighbours. Neighbours are all those nodes which are currently visible. If there are neighbours which do not have all the locally buffered messages, then we send them all missing messages.\\
 The \textbf{message listener} provided by the client will be called whenever a new message arrived. Right after calling the listener in a new thread, we can mark in the ACK-Table that we received that message.  \\
-To allow above functionalities, we have to implement a way of merging networks, i.e. merging the LC- and ACK-tables of different networks. Further, we have to build up WiFi Direct connections with all nodes in our reach. We can build up the LC-table in a way that we know the MAC address of all nodes, therefore we will know which visible devices are part of our network. With those we will build up a connection whenever we receive data that, according to our ACK-table, has not reached this node. If the entry of a node in our LC-table is getting older than a predefined threshold, then we also try to establish the connection again, to keep the information about the network up to date. \\
+To allow above functionalities, we have to implement a way of merging networks, i.e. merging the LC- and ACK-tables of different networks. Further, we have to build up WiFi Direct connections with all nodes in our reach. We can build up the LC-table in a way that we know the MAC addresses of all nodes, therefore we will know which visible devices are part of our network. With those we will build up a connection whenever we receive data that, according to our ACK-table, has not reached this node. If the entry of a node in our LC-table is getting older than a predefined threshold, then we also try to establish the connection again, to keep the information about the network up to date. \\
 Devices which are not part of our network have to be considered as well, they could be in a network that could be merged with ours. Therefore we keep a list of devices that are not part of our network, too. For each such device, we store the timestamp when we attempted to merge the last time. When this entry is getting old and the device is still visible, we retry. \\
 
 \subsubsection{Seperating the network from the application}
@@ -103,8 +104,8 @@ Technically, we achieve that by running our API in its own process and providing
 
 \subsubsection{Target client applications}
 	Even though our API can serve as backend to a variety of different application, some of our design choices are based on assumptions on how it will be used. \\
-	First, we assume the network to consists of a relativly small number of nodes, typically not more than 20 nodes. We will support more nodes, but the performance might be very poor and we will \textit{not} test our code for good scalability to hundreds of nodes. \\
-Second, a user can only be in one single network at the time. The limitation is not on number of applications, but on groups of users who decided on a common network. If someone uses our API with two independent such groups who are not willing to share a single network, the user will not be able to connect to both networks at the same time. But of course the network can be changed manually as often as needed.
+	First, we assume the network to consist a relatively small number of nodes, typically not more than 20 nodes. We will support more nodes, but the performance might be very poor and we will \textit{not} test our code for good scalability to hundreds of nodes. \\
+Second, a user can only be in one single network at the time. The limitation is not on number of applications, but on groups of users, who decided on a common network. If someone uses our API with two independent such groups who are not willing to share a single network, the user will not be able to connect to both networks at the same time. But of course the network can be changed manually as often as needed.
 
 \subsection{Emergency App}
 The main idea of this application is to provide emergency services even if a cellular connection cannot be directly established. \\
