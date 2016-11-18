@@ -14,15 +14,22 @@
 	
 	In this section, we discuss how we plan to support these functionalities. But before starting with that, we should have a look at	what a network is to us and how it is defined.\\
 	\subsubsection{Definition of a network}
-	Our system is supposed to be fully symmetric, i.e. there is no device (node) in the network with a special task, all nodes execute the same code. In particular, all nodes can send and receive messages at any point in time. New nodes can join the network by extending it at any node that is already integrated in the network. Furthermore, separately created networks should be able to be merged into one network.\\
-	To define our network accurately, let the ordered pair $a(A,B)$ denote an established connection (using WiFi Direct) between node $A$ and $B$. Each such pair is associated with the timestamp when the connection establishment happened. There will usually be many such establishments with different timestamps that involve the same two nodes, because the nodes are constantly building up and dropping connections to the nodes in reachable distance. We consider the known network of a node $C$ to be the set of all nodes $N_i, (1 \leq i \leq \text{\# of nodes})$ for which holds:  \\
-	There is a chain of established connections for some $n$ and a given timeout $t$
+	Basically, a network is just the set of devices which is connected. Connections can be directly, or indirectly with third devices in between. Now, because we have a symmetric, asynchronous and distributed system, each device has its own view. Also, the network will be growing when devices join the network and shrinking when devices are not accessible for long enough. Network splits and merges are also possible. \\
+	To have a model of a network, we try to define such a set of devices for each user in the network at any given point in time. Our implementation will then attempt to approximate the definition. \\
+	Let us think of our system as a graph from now on. We have a node for each device. When two devices are able to communicate with each other, then the corresponding nodes are connected with two directed edges. Note that the graph is dynamically changing over time.\\
+	Informally, we consider the known network of a node $C$ to be the set of all nodes $N_i, (1 \leq i \leq \text{\# of nodes})$ that could potentially send some information to $C$ that is not older than a given timeout $t$, where information can only flow according to the edges. \\
+	To have it more formal, let us define the set of information flows in our system and call it $IF$. For each information flow from node $A$ to node $B$, we have a directed edge $(A,B)$ associated with a timestamp inside of $IF$. Further, let us define a valid communication chain to be an ordered set of such flows, where a flow $a$ with edge $(A,B)$ can only be followed by a flow $b$ with edge $(C,D)$ if  $B = C$ and the timestamp of $a$ is older than the timestamp of $b$. To express ``is followed by'', we will use a shorthand: $a$ is followed by $b$ can be written as $a\circ b$.\\
+	Then our network seen by node $C$ is defined as the union of all nodes $N_i$ that, for some natural numbers $n, m, k$ and some set $\{a_0,\ldots a_k\} \subseteq IF$, we can build a valid communication chain:\\
 	\begin{displaymath}
-		a_0(N_{i},N_{j_0}) \circ a_1(N_{j_0},N_{j_1}) \circ \ldots \circ a_{n+1}(N_{j_n},C)
+		a_0 \circ a_1 \circ \ldots \circ a_k
 	\end{displaymath}
-	such that $a_k$ happened before $a_{k+1}$ for all $k \leq n$ and $a_0$ is not older than the timeout $t$ allows. \\
-	Informally, the network as seen by a given device $D$ consists of all nodes whose signal could reach $D$ within the predefined timeout. \\ 
-	
+	with the additional conditions: \\
+	\begin{itemize}
+	\item edge of $a_0 = (N_{i},N_{n}) $ \qquad \textit{(starts with $N_i$)}  \\
+	\item edge of $a_k = (N_{m},C)$ \qquad \textit{ (ends in $C$)} \\
+	\item timestamp of $a_0$ is not older than the timeout $t$ allows\\
+	\end{itemize}
+	Using this definition, our network includes all the nodes wich we can possibly know of that they have been connected to the system after the timeout. We will see, that the system that we implement can approximate this model quite well.
 	\subsubsection{Data structures}
 	To implement the functionalities described at the beginning, we use a few data structures. We will explain them now. \\
 
@@ -69,7 +76,7 @@ Each node in the network has a local Last Contact Table. This table has entries 
 			\end{tabular}
 		\end{center}
 
-When we filter out nodes from the LC-table which are older than a specified timeout $t$, then the list of nodes in such a local table corresponds to our definition of the network seen by this node. To build up the next data structure, we will also need this list of nodes considered to be in the known network. \\
+As long as we exchange and update the LC-table whenever we communicate with another node, and when we filter out nodes from the LC-table which are older than a specified timeout $t$, then the list of nodes in such a local table corresponds to our definition of the network seen by this node. To build up the next data structure, we will also need this list of nodes considered to be in the known network. \\
 
 The ACK-Table describes which Receiver nodes got a message from a particular Sender node. The table contains in the first column the Sender nodes and in the first row the Receiver nodes. Each entry in the table (except for the first row and the first column) contains a sequence number of the message from a Sender node, which the Receiver last received. \\
 Important to mention is, since the API is based on a decentralized system, that the table only shows the view seen by the owner of the table at a given time. \\
