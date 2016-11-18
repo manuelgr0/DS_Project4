@@ -32,14 +32,14 @@
 		
 \subsection{Chat App}
 	\begin{enumerate}
-		\item Create a MainActivity with clickable list of chats ordered by activity. Each chat should display how many messages are unread.
-		\item Add a overflow menu with "Preferences", "Show Key", "Add Chat", "Go Offline" buttons.
-		\item Implement a service that handles message state, address book state, receiving messages including decryption, notification to be started which starts on app start if not running.
+		\item Create a MainActivity with clickable list of chats ordered by most recent activity. Each chat should display how many messages are unread.
+		\item Add an overflow menu with "Preferences", "Show Key", "Add Chat", "Go Offline" and "Open Network Configuration" entries.
+		\item Implement a service that handles message state, address book state, receiving messages including decryption and notification handling. It is to be started on app start if not running.
 		\item Chat, address book and own keys have to be stored in separate files, when the service is shut down.
-		\item ChatActivity: Chat window, with message list left and right aligned, depending on sender, ordered descending in age
-		\item Add an activity to generate a public-private key pair with java.crypto.
-		\item Using ZXing library make two activities, one for displaying keys and one for scanning them.
-		\item Add and activity for initial key generation and name entry.
-		\item In preference menu add two options to enable sound and vibration for notification. Furthermore add an option to generate a new key.
+		\item Create a ChatActivity that holds the chat window, with message list left and right aligned, depending on sender, ordered descending in age.
+		\item Add an overflow menu with "Show Key" and "Forget User".
+		\item Using the ZXing Barcode Scanner allow for displaying keys and scanning public keys.
+		\item Create an activity to generate a public-private key pair with java.crypto and to enter the user-name.
+		\item Create a preference activity with two options to toggle sound and vibration for notification and an option to generate a new key.
 	\end{enumerate}
 			
