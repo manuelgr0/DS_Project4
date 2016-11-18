@@ -104,7 +104,7 @@ Technically, we achieve that by running our API in its own process and providing
 
 \subsubsection{Target client applications}
 	Even though our API can serve as backend to a variety of different application, some of our design choices are based on assumptions on how it will be used. \\
-	First, we assume the network to consist a relatively small number of nodes, typically not more than 20 nodes. We will support more nodes, but the performance might be very poor and we will \textit{not} test our code for good scalability to hundreds of nodes. \\
+	First, we assume the network to consist of a relatively small number of nodes, typically not more than 20 nodes. We will support more nodes, but the performance might be very poor and we will \textit{not} test our code for good scalability to hundreds of nodes. \\
 Second, a user can only be in one single network at the time. The limitation is not on number of applications, but on groups of users, who decided on a common network. If someone uses our API with two independent such groups who are not willing to share a single network, the user will not be able to connect to both networks at the same time. But of course the network can be changed manually as often as needed.
 
 \subsection{Emergency App}
