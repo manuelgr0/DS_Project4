@@ -1,0 +1,15 @@
+// Basic functionalities
+void broadcast_message(byte[] msg); // sends a message of aribtrary length into the network
+void register_message_listener(MessageListener ml); // for some interface MessageListener
+
+// Configuration via IPC
+// I think we should also have the option inside of the controller app to forbid
+// changes over IPC, so that the user stays in control 
+
+String get_network_tag();
+void set_network_tag(String networkTag);
+// also get and set for:
+// - Max Buffer size
+// - Timeout
+
+
