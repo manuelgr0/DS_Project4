@@ -75,7 +75,6 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess() {
                 //when successful
                 //TODO
-                Log.d("discoverPeers   :   ", peers_list.toString());
             }
 
             @Override

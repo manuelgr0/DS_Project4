@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pManager;
+import android.util.Log;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -62,7 +63,8 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             //just displaying how many devices were found
             TextView research = (TextView)mActivity.findViewById(R.id.research);
             int nbr = mActivity.getPeersList().size();
-            research.setText("Found "+nbr+" devices :D");
+            research.setText("Found "+nbr+" devices :D" + list.toString());
+
         }
     };
 }
