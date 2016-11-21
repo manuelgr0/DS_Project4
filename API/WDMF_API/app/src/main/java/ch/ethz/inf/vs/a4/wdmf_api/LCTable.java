@@ -25,7 +25,7 @@ public class LCTable {
 
     }
 
-   
+
     public void merge (LCTable other){
        for (String key : other.hash.keySet()){
            if (!hasKey(key) || hash.get(key) < other.hash.get(key)){

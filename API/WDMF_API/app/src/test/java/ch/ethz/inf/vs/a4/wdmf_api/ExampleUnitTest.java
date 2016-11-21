@@ -8,16 +8,23 @@ import static org.junit.Assert.*;
 public class ExampleUnitTest {
     @Test
     public void toStringWorks() throws Exception {
-        LCTable ack = new LCTable();
-        ack.insert ("eins", 1);
-        ack.insert ("zwei", 2);
 
-        LCTable bck = new LCTable();
-        bck.insert ("drei", 3);
-        bck.insert ("zwei", 4);
+        AckTable ack1 = new AckTable();
+        AckTable ack2 = new AckTable();
 
-        ack.merge(bck);
+        ack1.insert("a", "a", -1);
+        ack1.insert("a", "b", 1);
+        ack1.insert("b", "a", 2);
+        ack1.insert("b", "b", -1);
 
-       assertEquals("lol", ack.toString());
+        ack2.insert("b", "b", -1);
+        ack2.insert("b", "c", 3);
+        ack2.insert("c", "b", 4);
+        ack2.insert("c", "c", -1);
+
+        ack1.merge(ack2);
+
+
+        assertEquals("lol", ack1.toString());
     }
 }
