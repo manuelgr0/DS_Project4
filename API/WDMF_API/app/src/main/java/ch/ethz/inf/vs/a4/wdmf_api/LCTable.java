@@ -3,11 +3,11 @@ package ch.ethz.inf.vs.a4.wdmf_api;
 
 import java.util.Hashtable;
 
-public class AckTable {
+public class LCTable {
 
     private Hashtable<String, Integer> hash = new Hashtable<String,Integer>();
 
-    public AckTable() {
+    public LCTable() {
         //empty constructor
     }
 
@@ -25,7 +25,8 @@ public class AckTable {
 
     }
 
-    public void merge (AckTable other){
+   
+    public void merge (LCTable other){
        for (String key : other.hash.keySet()){
            if (!hasKey(key) || hash.get(key) < other.hash.get(key)){
                 hash.put(key, other.hash.get(key));

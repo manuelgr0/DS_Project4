@@ -8,11 +8,11 @@ import static org.junit.Assert.*;
 public class ExampleUnitTest {
     @Test
     public void toStringWorks() throws Exception {
-        AckTable ack = new AckTable();
+        LCTable ack = new LCTable();
         ack.insert ("eins", 1);
         ack.insert ("zwei", 2);
 
-        AckTable bck = new AckTable();
+        LCTable bck = new LCTable();
         bck.insert ("drei", 3);
         bck.insert ("zwei", 4);
 
