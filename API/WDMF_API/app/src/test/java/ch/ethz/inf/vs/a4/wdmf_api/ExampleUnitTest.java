@@ -4,14 +4,20 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-/**
- * Example local unit test, which will execute on the development machine (host).
- *
- * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
- */
+
 public class ExampleUnitTest {
     @Test
-    public void addition_isCorrect() throws Exception {
-        assertEquals(4, 2 + 2);
+    public void toStringWorks() throws Exception {
+        AckTable ack = new AckTable();
+        ack.insert ("eins", 1);
+        ack.insert ("zwei", 2);
+
+        AckTable bck = new AckTable();
+        bck.insert ("drei", 3);
+        bck.insert ("zwei", 4);
+
+        ack.merge(bck);
+
+       assertEquals("lol", ack.toString());
     }
 }
