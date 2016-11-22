@@ -4,6 +4,7 @@ import android.util.Log;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,7 +20,7 @@ public class Message {
     private byte[] data;
     private LCTable lcT;
     private AckTable ackT;
-    private List<byte[]> messages;
+    private List<byte[]> messages = new ArrayList<>();
 
 
     /** Several different constructors */
@@ -65,6 +66,21 @@ public class Message {
     private void parse(byte[] data) {
         type = data[0];
         if (type == TYPE_MESSAGES_ONLY) {
+            int dataSize = data.length;
+
+            int offset = 4;
+            int pos = 0;
+            while (offset < dataSize) {
+                int msgSize = readNumber(data, offset);
+                byte[] msg = new byte[msgSize];
+
+                offset += 4;
+                for (int i = 0; i < msgSize; i++)
+                    msg[i] = data[offset + i];
+                offset += msgSize;
+
+                messages.add(msg);
+            }
 
         } else if (type == TYPE_TABLES_ONLY) {
             int sizeLT = readNumber(data, 4);
@@ -91,13 +107,13 @@ public class Message {
 
     private void parseLCTable (String lct) {
         // TODO
-        System.out.println("LCTable: " + lct);
+        System.out.println("LCTable in raw format: " + lct);
         //Log.d("LCTable", lct); // Does not work with JUnit Tests
     }
 
     private void parseACKTable(String ackt) {
         // TODO
-        System.out.println("AckTable: " + ackt);
+        System.out.println("AckTable in raw format: " + ackt);
         //Log.d("AckTable", ackt); // Does not work with JUnit Tests
     }
 
