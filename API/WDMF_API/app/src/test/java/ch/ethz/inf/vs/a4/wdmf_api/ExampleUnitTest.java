@@ -9,29 +9,21 @@ public class ExampleUnitTest {
     @Test
     public void toStringWorks() throws Exception {
 
-        AckTable ack1 = new AckTable("a");
-        AckTable ack2 = new AckTable("b");
-        AckTable ack3 = new AckTable("c");
+        LCTable a = new LCTable("a");
+        LCTable b = new LCTable("b");
+        LCTable c = new LCTable("c");
 
-        ack2.merge(ack3);
-        ack2.update("c", 3);
-
-        ack1.merge(ack2);
+        c.merge("a", a);
+        b.merge("c", c);
 
 
-        ack1.update("b", 1);
-        ack1.update("a", 2);
+        a.merge("b", b);
 
 
+        System.out.println("ack1 = " + b.toString());
 
 
-
-
-        System.out.println("ack1 = " + ack1.toString());
-
-
-
-        assertEquals("", ack1.toString());
+        assertEquals("", a.toString());
         //assertEquals("", ack2.toString());
 
     }

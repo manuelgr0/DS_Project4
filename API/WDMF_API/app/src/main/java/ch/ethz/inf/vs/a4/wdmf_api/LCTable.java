@@ -1,20 +1,18 @@
 package ch.ethz.inf.vs.a4.wdmf_api;
 
 
+import java.util.Date;
 import java.util.Hashtable;
 
 public class LCTable {
 
-    private Hashtable<String, Integer> hash = new Hashtable<String,Integer>();
+    private Hashtable<String, Long> hash = new Hashtable<>();
+    private String owner;
 
-    public LCTable() {
-        //empty constructor
+    public LCTable(String node) {
+        this.owner = node;
     }
 
-    public void insert(String node, Integer value){
-        hash.put(node, value);
-
-    }
 
     public boolean hasKey(String node){
        return hash.containsKey(node);
@@ -26,17 +24,16 @@ public class LCTable {
     }
 
 
-    public void merge (LCTable other){
+    public void merge (String sender, LCTable other){
        for (String key : other.hash.keySet()){
-           if (!hasKey(key) || hash.get(key) < other.hash.get(key)){
+           if (key != owner && (!hasKey(key) || hash.get(key) < other.hash.get(key))){
                 hash.put(key, other.hash.get(key));
            }
        }
+        Date date = new Date();
+        hash.put(sender, date.getTime());
     }
 
-    public void update (String node, Integer value){
-        hash.put(node, value);
-    }
 
     public String toString (){
         return hash.toString();
