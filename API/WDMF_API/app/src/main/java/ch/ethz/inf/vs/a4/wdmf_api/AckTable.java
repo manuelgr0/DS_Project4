@@ -65,17 +65,11 @@ public class AckTable {
             if (this.hash.containsKey(keyS)) {
 
                 for (String keyR : other.hash.get(keyS).keySet()) {
-                    //This doesn't have keyR
-                    if (!this.hash.get(keyS).containsKey(keyR)) {
+                    //This doesn't have keyR or this copy is smaller
+                    if (!this.hash.get(keyS).containsKey(keyR) || this.hash.get(keyS).get(keyR) < other.hash.get(keyS).get(keyR)) {
                         this.insert(keyS, keyR, other.hash.get(keyS).get(keyR));
                     }
 
-                    //This does have keyR
-                    if (this.hash.get(keyS).containsKey(keyR)) {
-
-                        if (this.hash.get(keyS).get(keyR) < other.hash.get(keyS).get(keyR))
-                            this.insert(keyS, keyR, other.hash.get(keyS).get(keyR));
-                    }
 
                 }
 
