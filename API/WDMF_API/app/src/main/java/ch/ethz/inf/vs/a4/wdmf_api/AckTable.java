@@ -7,18 +7,24 @@ public class AckTable {
 
     private Hashtable<String, Hashtable<String, Integer>> hash = new Hashtable<>();
 
-    public AckTable() {
-        //empty constructor
+    public AckTable(String node) {
+        insert(node, node, -1);
+    }
+
+
+    private AckTable() {
+        //private, empty constructor for cloning
     }
 
     public void insert(String sender, String receiver, Integer value) {
 
+        System.out.println();
         Hashtable<String, Integer> h;
-        if (hash.containsKey(sender)) {
-            h = hash.get(sender);
+        if (this.hash.containsKey(sender)) {
+            h = this.hash.get(sender);
         } else {
             h = new Hashtable<String, Integer>();
-            hash.put(sender, h);
+            this.hash.put(sender, h);
         }
 
         h.put(receiver, value);
@@ -35,14 +41,6 @@ public class AckTable {
 
     public void merge(AckTable other) {
 
-        for (String t : this.hash.keySet()) {
-            for (String o : other.hash.keySet()) {
-                if (!this.hash.containsKey(o)) {
-                    System.out.println("t is " + t + " o is " +o);
-                    this.insert(t, o, -1);
-                }
-            }
-        }
 
         for (String keyS : other.hash.keySet()) {
             //This doesn't have keyS
@@ -52,12 +50,16 @@ public class AckTable {
                 for (String n : this.hash.keySet()) {
 
                     if (!other.hash.containsKey(n)) {
-                        this.insert(keyS, n, -1);
+                        System.out.println(keyS + "  " + n);
+                        this.hash.get("b").put("a", -1);
+                        this.hash.get("a").put("b", -1);
+                        //this.insert(keyS, n, -1); // <-- fucked up line
+                        //this.insert(n, keyS, -1);
                     }
                 }
 
 
-            }
+            } /*
 
             //This does have keyS
             if (this.hash.containsKey(keyS)) {
@@ -77,15 +79,27 @@ public class AckTable {
 
                 }
 
-            }
+            } */
 
         }
 
     }
 
-    public boolean reachedAll(Integer seqNo) {
+    public boolean reachedAll(String sender, Integer seqNo) {
+        for (String rec : this.hash.get(sender).keySet()) {
+            if (this.hash.get(sender).get(rec) < seqNo) {
+                return false;
+            }
+        }
+
         return true;
 
+    }
+
+    public AckTable clone() {
+        AckTable ret = new AckTable();
+        ret.hash = (Hashtable<String, Hashtable<String, Integer>>) this.hash.clone();
+        return ret;
     }
 
     public String toString() {
