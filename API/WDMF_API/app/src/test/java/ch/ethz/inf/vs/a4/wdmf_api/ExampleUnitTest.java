@@ -22,14 +22,19 @@ public class ExampleUnitTest {
         ack2.insert("c", "b", 4);
         ack2.insert("c", "c", -1); */
 
-        ack1.merge(ack2);
+        /*ack1.merge(ack2);
 
         System.out.println("ack1 = " + ack1.toString());
         System.out.println("ack2 = " + ack2.toString());
 
 
-        assertEquals("", ack1.toString());
+        assertEquals("", ack1.toString());*/
         //assertEquals("", ack2.toString());
 
+        LCTable lcTable = new LCTable();
+        lcTable.insert("a", 1);
+
+        Message msg = new Message(lcTable, ack1);
+        Message msg1 = new Message(msg.getRawData());
     }
 }
