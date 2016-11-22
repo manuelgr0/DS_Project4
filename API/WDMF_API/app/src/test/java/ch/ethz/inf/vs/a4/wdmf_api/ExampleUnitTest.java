@@ -11,21 +11,24 @@ public class ExampleUnitTest {
 
         AckTable ack1 = new AckTable("a");
         AckTable ack2 = new AckTable("b");
-        //AckTable ack3 = ack2.clone();
+        AckTable ack3 = new AckTable("c");
 
-      /*  ack1.insert("a", "b", 1);
-        ack1.insert("b", "a", 2);
-        ack1.insert("b", "b", -1);
-
-
-        ack2.insert("b", "c", 3);
-        ack2.insert("c", "b", 4);
-        ack2.insert("c", "c", -1); */
+        ack2.merge(ack3);
+        ack2.update("c", 3);
 
         ack1.merge(ack2);
 
+
+        ack1.update("b", 1);
+        ack1.update("a", 2);
+
+
+
+
+
+
         System.out.println("ack1 = " + ack1.toString());
-        System.out.println("ack2 = " + ack2.toString());
+
 
 
         assertEquals("", ack1.toString());
