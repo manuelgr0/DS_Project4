@@ -13,11 +13,6 @@ public class AckTable {
         this.owner = node;
     }
 
-
-    private AckTable() {
-        //private, empty constructor for cloning
-    }
-
     private void insert(String sender, String receiver, Integer value) {
 
         System.out.println();
@@ -32,8 +27,8 @@ public class AckTable {
         h.put(receiver, value);
     }
 
-    public void update (String receiver, Integer seqNo){
-        if(receiver != owner && hash.containsKey(owner) && hash.get(owner).containsKey(receiver))
+    public void update(String receiver, Integer seqNo) {
+        if (receiver != owner && hash.containsKey(owner) && hash.get(owner).containsKey(receiver))
             insert(owner, receiver, seqNo);
     }
 
@@ -43,8 +38,10 @@ public class AckTable {
 
     public void delete(String node) {
         this.hash.remove(node);
+        for(String key : this.hash.keySet()){
+            this.hash.get(key).remove(node);
+        }
     }
-
 
     public void merge(AckTable other) {
 
@@ -56,10 +53,7 @@ public class AckTable {
                 for (String n : this.hash.keySet()) {
 
                     if (!other.hash.containsKey(n)) {
-                        System.out.println(keyS + "  " + n);
-                        //this.hash.get("b").put("a", -1);
-                        //this.hash.get("a").put("b", -1);
-                        this.insert(keyS, n, -1); // <-- fucked up line
+                        this.insert(keyS, n, -1);
                         this.insert(n, keyS, -1);
                     }
                 }
@@ -93,22 +87,13 @@ public class AckTable {
 
     public boolean reachedAll(String sender, Integer seqNo) {
         for (String rec : this.hash.get(sender).keySet()) {
-            if (sender != rec && this.hash.get(sender).get(rec)  < seqNo) {
+            if (sender != rec && this.hash.get(sender).get(rec) < seqNo) {
                 return false;
             }
         }
 
         return true;
 
-    }
-
-    public AckTable clone() {
-        AckTable ret = new AckTable();
-        for(String key : this.hash.keySet()){
-            ret.hash.put(key, (Hashtable<String, Integer>) this.hash.get(key).clone());
-        }
-
-        return ret;
     }
 
     public String toString() {
