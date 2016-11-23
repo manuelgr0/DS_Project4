@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -93,23 +94,28 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         for (WifiP2pDevice device : this.peers_list) {
-            WifiP2pConfig config = new WifiP2pConfig();
-            config.deviceAddress = device.deviceAddress;
-            final String s = config.deviceAddress;
-            mManager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
-                @Override
-                public void onSuccess() {
-                    //if it connected, we display the info of the device on the screen
-                    TextView text = (TextView) findViewById(R.id.device);
-                    String devices_connected = text.getText().toString() + "\n" + s;
-                    text.setText(devices_connected);
-                }
-                @Override
-                public void onFailure(int reason) {
-                    //TODO
-                }
-            });
+            connect_device(device);
         }
+    }
+
+    void connect_device(WifiP2pDevice device) {
+        WifiP2pConfig config = new WifiP2pConfig();
+        config.deviceAddress = device.deviceAddress;
+        final String s = config.deviceAddress;
+        mManager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                //if it connected, we display the info of the device on the screen
+                TextView text = (TextView) findViewById(R.id.device);
+                String devices_connected = text.getText().toString() + "\n" + s;
+                text.setText(devices_connected);
+            }
+            @Override
+            public void onFailure(int reason) {
+                //TODO: Retry after timeout?
+                Toast.makeText(MainActivity.this, "Connection failed!", Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     ArrayList<WifiP2pDevice> getPeersList() {
