@@ -40,10 +40,11 @@ public class ExampleUnitTest {
         msgs.add("msg22ajkdlsöfljasdölfadsjfasdjfsdölkfjasdölkjfjkadslfjlk".getBytes());
         msgs.add("msg3".getBytes());
 
-        Message msg = new Message(msgs);
+        Message msg = new Message(1, "sender 1", msgs);
         System.out.println("Message after flattening: " + new String(msg.getRawData()));
         Message m = new Message(msg.getRawData());
-        System.out.println  ("Message after parsing: " +
+        System.out.println  ("Message after parsing: " + "SeqNo: " + m.getSeqNo() +
+                                ", Sender: " + m.getSender() + ", " +
                                 new String(m.getMessageContents().get(0)) + ", " +
                                 new String(m.getMessageContents().get(1)) + ", " +
                                 new String(m.getMessageContents().get(2))
@@ -58,7 +59,9 @@ public class ExampleUnitTest {
 
         a.merge(b);
 
-        msg = new Message(lc, a);
+        msg = new Message(2, lc, a);
+        System.out.println("SeqNo: " + msg.getSeqNo() + ", Sender of tables: " + msg.getSender());
         m = new Message(msg.getRawData());
+        System.out.println("SeqNo: " + m.getSeqNo() + ", Sender of tables: " + m.getSender());
     }
 }

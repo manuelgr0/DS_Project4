@@ -18,6 +18,9 @@ public class LCTable {
         this.hash = h;
     }
 
+    public String getOwner() {
+        return owner;
+    }
 
     public boolean hasKey(String node){
        return hash.containsKey(node);

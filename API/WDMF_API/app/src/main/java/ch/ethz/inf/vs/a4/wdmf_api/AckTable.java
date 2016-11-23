@@ -24,6 +24,10 @@ public class AckTable {
         }
     }
 
+    public String getOwner() {
+        return owner;
+    }
+
     private void insert(String sender, String receiver, Integer value) {
 
         System.out.println();

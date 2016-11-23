@@ -12,14 +12,14 @@ import java.util.regex.Pattern;
  * Created by Alessandro on 22.11.2016.
  */
 
-//TODO: Add sender and sequence number to a message
-
 public class Message {
 
     public static byte TYPE_TABLES_ONLY = 1;
     public static byte TYPE_MESSAGES_ONLY = 2;
 
     private byte type;
+    private int seqNo;
+    private String sender;
     private byte[] data;
     private LCTable lcT;
     private AckTable ackT;
@@ -33,20 +33,41 @@ public class Message {
         parse(this.data);
     }
 
-    public Message(LCTable lcT, AckTable ackT) {
-        type = TYPE_TABLES_ONLY;
-        this.lcT = lcT;
-        this.ackT = ackT;
-        flatten(this.lcT, this.ackT);
+    // sender is the owner of lcT and ackT, so not needed in the constructor
+    public Message(int seqNo, LCTable lcT, AckTable ackT) {
+        if (!lcT.getOwner().equals(ackT.getOwner()))
+            throw new IllegalArgumentException("LCTable and AckTable have to have the same owner.");
+        else {
+            type = TYPE_TABLES_ONLY;
+            this.seqNo = seqNo;
+            this.sender = lcT.getOwner();
+            this.lcT = lcT;
+            this.ackT = ackT;
+            flatten(this.lcT, this.ackT);
+        }
     }
 
-    public Message(List<byte[]> messages) {
+    public Message(int seqNo, String sender, List<byte[]> messages) {
         type = TYPE_MESSAGES_ONLY;
+        this.seqNo = seqNo;
+        this.sender = sender;
         this.messages = messages;
         flatten(this.messages);
     }
 
     /** Getters */
+
+    public int getType() {
+        return type;
+    }
+
+    public int getSeqNo() {
+        return seqNo;
+    }
+
+    public String getSender() {
+        return sender;
+    }
 
     public LCTable getLCTable() {
         return lcT;
@@ -71,7 +92,21 @@ public class Message {
         if (type == TYPE_MESSAGES_ONLY) {
             int dataSize = data.length;
 
+            // determine seqNo
             int offset = 4;
+            seqNo = readNumber(data, offset);
+            offset += 4;
+
+            // determine sender
+            int senderLength = readNumber(data, offset);
+            offset += 4;
+            byte[] s = new byte[senderLength];
+            for (int i = 0; i < senderLength; i++) {
+                s[i] = data[offset + i];
+            }
+            sender = new String(s);
+            offset += senderLength;
+
             while (offset < dataSize) {
                 int msgSize = readNumber(data, offset);
                 byte[] msg = new byte[msgSize];
@@ -85,13 +120,18 @@ public class Message {
             }
 
         } else if (type == TYPE_TABLES_ONLY) {
-            int sizeLT = readNumber(data, 4);
-            int sizeAT = data.length - sizeLT - 8;
+            // determine seqNo
+            int offset = 4;
+            seqNo = readNumber(data, offset);
+            offset += 4;
+
+            int sizeLT = readNumber(data, offset);
+            int sizeAT = data.length - sizeLT - 8 - 4;
+            offset += 4;
 
             byte[] LT = new byte[sizeLT];
             byte[] AT = new byte[sizeAT];
 
-            int offset = 8;
             for (int i = 0; i < sizeLT; i++)
                 LT[i] = data[offset + i];
 
@@ -128,6 +168,7 @@ public class Message {
             }
 
             lcT = new LCTable(owner, hashtable);
+            sender = lcT.getOwner();
         }
         System.out.println("toString of LCTable after parsing: " + lct.toString());
     }
@@ -180,16 +221,21 @@ public class Message {
 
         // find out how much raw data
         // first 4 bytes for type (I know, type has only one byte...)
-        // second 4 bytes for length of lT
-        int sizeOfData = 4 + 4 + lT.length + aT.length;
+        // second 4 bytes for seqNo
+        // third 4 bytes for length of lT
+        int sizeOfData = 4 + 4 + 4 + lT.length + aT.length;
 
         // allocate space for data
         data = new byte[sizeOfData];
         data[0] = type;
 
+        int offset = 4;
+        writeNumber(seqNo, data, offset);
+        offset += 4;
+
         // write flattened data structures to data
-        writeNumber(lT.length, data, 4);
-        int offset = 8;
+        writeNumber(lT.length, data, offset);
+        offset += 4;
         for (int i = 0; i < lT.length; i++)
             data[offset + i] = lT[i];
         offset += lT.length;
@@ -205,7 +251,7 @@ public class Message {
         int n = msgs.size();
 
         // find out how much raw data
-        int sizeOfData = 4;
+        int sizeOfData = 4 + 4 + 4 + sender.length();
         for (int i = 0; i < n; i++)
             sizeOfData += (msgs.get(i).length + 4);
 
@@ -214,6 +260,20 @@ public class Message {
         data[0] = type;
 
         int offset = 4;
+
+        // write seqNo
+        writeNumber(seqNo, data, offset);
+        offset += 4;
+
+        // write sender
+        byte[] s = sender.getBytes();
+        int senderLength = s.length;
+        writeNumber(senderLength, data, offset);
+        offset += 4;
+        for(int i = 0; i < senderLength; i++)
+            data[offset+i] = s[i];
+        offset += senderLength;
+
         for (int i = 0; i < n; i++) {
             byte[] b = msgs.get(i);
             int size = b.length;
