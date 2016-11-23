@@ -12,6 +12,8 @@ import java.util.regex.Pattern;
  * Created by Alessandro on 22.11.2016.
  */
 
+//TODO: Add sender and sequence number to a message
+
 public class Message {
 
     public static byte TYPE_TABLES_ONLY = 1;

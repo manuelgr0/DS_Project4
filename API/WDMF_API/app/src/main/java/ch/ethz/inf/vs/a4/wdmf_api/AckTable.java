@@ -3,6 +3,8 @@ package ch.ethz.inf.vs.a4.wdmf_api;
 
 import java.util.Hashtable;
 
+//TODO: Add function to ask if the owner of an ACK-Table already got a message with given sender and sequence number
+
 public class AckTable {
 
     private Hashtable<String, Hashtable<String, Integer>> hash = new Hashtable<>();
