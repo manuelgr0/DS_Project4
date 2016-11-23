@@ -8,8 +8,10 @@ import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
+
 
 public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
     private WifiP2pManager mManager;
@@ -36,6 +38,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                 // Wifi P2P is enabled
             } else {
                 // Wi-Fi P2P is not enabled
+                Toast.makeText(context, "WiFi Direct is not enabled!", Toast.LENGTH_LONG).show();
             }
         } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
             // Call WifiP2pManager.requestPeers() to get a list of current peers
@@ -46,10 +49,17 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             if (mManager != null) {
                 mManager.requestPeers(mChannel, myPeerListListener);
             }
+            Log.d("Peers changed", "");
+
         } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
             // Respond to new connection or disconnections
+
+            Log.d("Connection changed", "");
+
         } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
             // Respond to this device's wifi state changing
+
+            Log.d("This Device changed", "");
         }
     }
 
@@ -58,13 +68,15 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
         public void onPeersAvailable(WifiP2pDeviceList peers) {
             // here, we are putting the discovered peers into
             //the list of peers of the activity .
-            ArrayList<WifiP2pDevice> list= new ArrayList<WifiP2pDevice>(peers.getDeviceList());
+            ArrayList<WifiP2pDevice> list= new ArrayList<>(peers.getDeviceList());
             mActivity.setPeersList(list);
             //just displaying how many devices were found
             TextView research = (TextView)mActivity.findViewById(R.id.research);
-            int nbr = mActivity.getPeersList().size();
-            research.setText("Found "+nbr+" devices :D" + list.toString());
-
+            String result = "";
+            for(WifiP2pDevice device : list) {
+                result = result + "\n" + device.deviceName;
+            }
+            research.setText(result);
         }
     };
 }
