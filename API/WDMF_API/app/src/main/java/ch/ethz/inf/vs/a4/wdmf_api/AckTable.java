@@ -13,6 +13,15 @@ public class AckTable {
         this.owner = node;
     }
 
+    public AckTable(String node, Hashtable<String, Hashtable<String, Integer>> h) {
+        if (h.size() == 0)
+            throw new IllegalArgumentException("Hashtable must be non-empty.");
+        else {
+            this.owner = node;
+            this.hash = h;
+        }
+    }
+
     private void insert(String sender, String receiver, Integer value) {
 
         System.out.println();
@@ -92,7 +101,7 @@ public class AckTable {
 
     public String toString() {
 
-        return this.hash.toString();
+        return this.owner + this.hash.toString();
 
     }
 

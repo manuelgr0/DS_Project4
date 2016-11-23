@@ -13,6 +13,11 @@ public class LCTable {
         this.owner = node;
     }
 
+    public LCTable(String node, Hashtable<String, Long> h) {
+        this.owner = node;
+        this.hash = h;
+    }
+
 
     public boolean hasKey(String node){
        return hash.containsKey(node);
@@ -36,7 +41,7 @@ public class LCTable {
 
 
     public String toString (){
-        return hash.toString();
+        return owner + hash.toString();
     }
 
 }

@@ -51,11 +51,14 @@ public class ExampleUnitTest {
 
         LCTable lc = new LCTable("A");
         lc.merge("B", new LCTable("B"));
-        lc.merge("C", new LCTable("C"));
+        //lc.merge("C", new LCTable("C"));
 
-        AckTable ack = new AckTable("A");
+        AckTable a = new AckTable("A");
+        AckTable b = new AckTable("B");
 
-        msg = new Message(lc, ack);
+        a.merge(b);
+
+        msg = new Message(lc, a);
         m = new Message(msg.getRawData());
     }
 }
