@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements WifiP2pManager.ConnectionInfoListener, MessageTarget {
+public class MainActivity extends AppCompatActivity implements WifiP2pManager.ConnectionInfoListener{//}, MessageTarget {
 
     WifiP2pManager mManager;
     WifiP2pManager.Channel mChannel;
@@ -146,11 +146,12 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
 
     @Override
     public void onConnectionInfoAvailable(final WifiP2pInfo info) {
+
         /*
          * The group owner accepts connections using a server socket and then spawns a
          * client socket for every client. This is handled by {@code
          * GroupOwnerSocketHandler}
-         */
+         *
 
         Thread handler = null;
 
@@ -179,7 +180,7 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
             handler.start();
         }
         chatFragment = new WiFiChatFragment();
-        getFragmentManager().beginTransaction().replace(R.id.container_root, chatFragment).commit();
+        getFragmentManager().beginTransaction().replace(R.id.container_root, chatFragment).commit();*/
     }
 
     ArrayList<WifiP2pDevice> getPeersList() {
