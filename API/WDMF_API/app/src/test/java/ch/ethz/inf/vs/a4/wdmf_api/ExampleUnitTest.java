@@ -50,6 +50,11 @@ public class ExampleUnitTest {
                                 new String(m.getMessageContents().get(2))
                             );
 
+        // Actually check something in the test
+        assertEquals("Consistency of raw data inside of a message",
+                msg.getRawData().toString(),
+                m.getRawData().toString());
+
         LCTable lc = new LCTable("A");
         lc.merge("B", new LCTable("B"));
         //lc.merge("C", new LCTable("C"));
@@ -63,5 +68,11 @@ public class ExampleUnitTest {
         System.out.println("SeqNo: " + msg.getSeqNo() + ", Sender of tables: " + msg.getSender());
         m = new Message(msg.getRawData());
         System.out.println("SeqNo: " + m.getSeqNo() + ", Sender of tables: " + m.getSender());
+
+        // Actually check something in the test
+        assertEquals("Consistency of raw data inside of a message",
+                msg.getRawData().toString(),
+                m.getRawData().toString());
+
     }
 }
