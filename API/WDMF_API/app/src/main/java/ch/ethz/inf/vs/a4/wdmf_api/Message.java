@@ -51,7 +51,8 @@ public class Message {
         type = TYPE_MESSAGES_ONLY;
         this.seqNo = seqNo;
         this.sender = sender;
-        this.messages = messages;
+        for (byte[] item : messages) this.messages.add(item);
+        //this.messages = messages;
         flatten(this.messages);
     }
 
