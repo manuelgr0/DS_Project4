@@ -5,6 +5,7 @@ import java.util.Hashtable;
 
 
 public class AckTable {
+    public static int INIT_SEQ_NR = -1;
 
     private Hashtable<String, Hashtable<String, Integer>> hash = new Hashtable<>();
     private String owner;
@@ -64,8 +65,8 @@ public class AckTable {
     public void merge(AckTable other) {
 
         if (hash.isEmpty() && other.hash.isEmpty()) {
-            this.insert(owner, owner, -1);
-            other.insert(other.owner, other.owner, -1);
+            this.insert(owner, owner, INIT_SEQ_NR);
+            other.insert(other.owner, other.owner, INIT_SEQ_NR);
             merge(other);
             hash.get(owner).remove(owner);
             hash.get(other.owner).remove(other.owner);
@@ -76,7 +77,7 @@ public class AckTable {
 
 
         if (other.hash.isEmpty()) {
-            other.insert(other.owner, other.owner, -1);
+            other.insert(other.owner, other.owner, INIT_SEQ_NR);
             merge(other);
             this.hash.get(other.owner).remove(other.owner);
             other.hash.get(other.owner).remove(other.owner);
@@ -84,7 +85,7 @@ public class AckTable {
         }
 
         if (hash.isEmpty()) {
-            insert(owner, owner, -1);
+            insert(owner, owner, INIT_SEQ_NR);
             merge(other);
             hash.get(owner).remove(owner);
             return;
@@ -99,8 +100,8 @@ public class AckTable {
                 for (String n : this.hash.keySet()) {
 
                     if (!other.hash.containsKey(n)) {
-                        this.insert(keyS, n, -1);
-                        this.insert(n, keyS, -1);
+                        this.insert(keyS, n, INIT_SEQ_NR);
+                        this.insert(n, keyS, INIT_SEQ_NR);
                     }
                 }
 
