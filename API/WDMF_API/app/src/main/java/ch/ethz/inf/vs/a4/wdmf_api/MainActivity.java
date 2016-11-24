@@ -3,8 +3,10 @@ package ch.ethz.inf.vs.a4.wdmf_api;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
+import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
+import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,15 +16,21 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
+import java.net.InetAddress;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements WifiP2pManager.ConnectionInfoListener {
 
     WifiP2pManager mManager;
     WifiP2pManager.Channel mChannel;
     BroadcastReceiver mReceiver;
     IntentFilter mIntentFilter;
     private ArrayList<WifiP2pDevice> peers_list;
+
+    static final int SERVER_PORT = 4545;
+    public static final int MESSAGE_READ = 0x400 + 1;
+    public static final int MY_HANDLE = 0x400 + 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +110,8 @@ public class MainActivity extends AppCompatActivity {
         WifiP2pConfig config = new WifiP2pConfig();
         config.deviceAddress = device.deviceAddress;
         final String s = config.deviceAddress;
+        config.wps.setup = WpsInfo.PBC;
+
         mManager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
@@ -116,6 +126,44 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "Connection failed!", Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    @Override
+    public void onConnectionInfoAvailable(final WifiP2pInfo info) {
+        /*
+         * The group owner accepts connections using a server socket and then spawns a
+         * client socket for every client. This is handled by {@code
+         * GroupOwnerSocketHandler}
+         */
+
+        Thread handler = null;
+
+        // InetAddress from WifiP2pInfo struct.
+        InetAddress groupOwnerAddress = info.groupOwnerAddress.getHostAddress();
+
+        // After the group negotiation, we can determine the group owner.
+        if (info.groupFormed && info.isGroupOwner) {
+            // Do whatever tasks are specific to the group owner.
+            // One common case is creating a server thread and accepting
+            // incoming connections.
+            Log.d("wifidirect:  ", "Connected as group owner");
+            try {
+                handler = new GroupOwnerSocketHandler(((MessageTarget) this).getHandler());
+                handler.start();
+            } catch (IOException e) {
+                Log.d("wifidirect:  ", "Failed to create a server thread - " + e.getMessage());
+                return;
+            }
+        } else if (info.groupFormed) {
+            // The other device acts as the client. In this case,
+            // you'll want to create a client thread that connects to the group
+            // owner.
+            Log.d("wifidirect:  ", "Connected as peer");
+            handler = new ClientSocketHandler(((MessageTarget) this).getHandler(), p2pInfo.groupOwnerAddress);
+            handler.start();
+        }
+        chatFragment = new WiFiChatFragment();
+        getFragmentManager().beginTransaction().replace(R.id.container_root, chatFragment).commit();
     }
 
     ArrayList<WifiP2pDevice> getPeersList() {
