@@ -18,22 +18,22 @@ public class ParserUnitTest {
     public void buildAndUnbuild() throws Exception {
         List<byte[]> msgs = new ArrayList<>();
 
-        msgs.add("Message 1".getBytes());
-        msgs.add("Message 2".getBytes());
+        msgs.add("Packet 1".getBytes());
+        msgs.add("Packet 2".getBytes());
 
         byte[] msg3 = {1,2,3,42};
         msgs.add(msg3);
 
-        Message msg = new Message(1, "Jakob", msgs);
+        Packet msg = new Packet(msgs);
 
         List<byte[]> afterParsing = msg.getMessageContents();
 
         assertEquals("String message 1 is the same before and after parsing",
-                "Message 1",
+                "Packet 1",
                 new String(afterParsing.get(0))
                 );
         assertEquals("String message 2 is the same before and after parsing",
-                "Message 2",
+                "Packet 2",
                 new String(afterParsing.get(1))
         );
         assertTrue("Byte message is the same before and after parsing",
@@ -42,28 +42,22 @@ public class ParserUnitTest {
                 && afterParsing.get(2)[2] == 3
                 && afterParsing.get(2)[3] == 42
         );
-
-        assertEquals(
-                "sender is correct",
-                "Jakob",
-                msg.getSender()
-        );
     }
 
     @Test
-    // Checks data and method-call safety of the Message class
+    // Checks data and method-call safety of the Packet class
     public void internalSafety() throws Exception {
 
         List<byte[]> msgs = new ArrayList<>();
-        msgs.add("Message 1".getBytes());
-        msgs.add("Message 2".getBytes());
+        msgs.add("Packet 1".getBytes());
+        msgs.add("Packet 2".getBytes());
 
-        Message packet1 = new Message(1, "Jakob", msgs);
+        Packet packet1 = new Packet(msgs);
 
         msgs.remove(1);
-        msgs.add("Message 2.1".getBytes());
+        msgs.add("Packet 2.1".getBytes());
 
-        Message packet2 = new Message(2, "Jakob", msgs);
+        Packet packet2 = new Packet(msgs);
 
         // Check whether it can handle reading fields we didn't specify
         packet1.getAckTable();
@@ -71,23 +65,23 @@ public class ParserUnitTest {
 
         //Check wheter the content is as expected
         assertEquals(
-                "Message content is consistent (1)",
-                "Message 1",
+                "Packet content is consistent (1)",
+                "Packet 1",
                 new String(packet1.getMessageContents().get(0))
         );
         assertEquals(
-                "Message content is consistent (2)",
-                "Message 2",
+                "Packet content is consistent (2)",
+                "Packet 2",
                 new String(packet1.getMessageContents().get(1))
         );
         assertEquals(
-                "Message content is consistent (3)",
-                "Message 1",
+                "Packet content is consistent (3)",
+                "Packet 1",
                 new String(packet2.getMessageContents().get(0))
         );
         assertEquals(
-                "Message content is consistent (4)",
-                "Message 2.1",
+                "Packet content is consistent (4)",
+                "Packet 2.1",
                 new String(packet2.getMessageContents().get(1))
         );
     }

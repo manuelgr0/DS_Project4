@@ -1,7 +1,5 @@
 package ch.ethz.inf.vs.a4.wdmf_api;
 
-import android.util.Log;
-
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -40,11 +38,10 @@ public class ExampleUnitTest {
         msgs.add("msg22ajkdlsöfljasdölfadsjfasdjfsdölkfjasdölkjfjkadslfjlk".getBytes());
         msgs.add("msg3".getBytes());
 
-        Message msg = new Message(1, "sender 1", msgs);
-        System.out.println("Message after flattening: " + new String(msg.getRawData()));
-        Message m = new Message(msg.getRawData());
-        System.out.println  ("Message after parsing: " + "SeqNo: " + m.getSeqNo() +
-                                ", Sender: " + m.getSender() + ", " +
+        Packet msg = new Packet(msgs);
+        System.out.println("Packet after flattening: " + new String(msg.getRawData()));
+        Packet m = new Packet(msg.getRawData());
+        System.out.println  ("Packet after parsing: " +
                                 new String(m.getMessageContents().get(0)) + ", " +
                                 new String(m.getMessageContents().get(1)) + ", " +
                                 new String(m.getMessageContents().get(2))
@@ -64,10 +61,10 @@ public class ExampleUnitTest {
 
         a.merge(b);
 
-        msg = new Message(2, lc, a);
-        System.out.println("SeqNo: " + msg.getSeqNo() + ", Sender of tables: " + msg.getSender());
-        m = new Message(msg.getRawData());
-        System.out.println("SeqNo: " + m.getSeqNo() + ", Sender of tables: " + m.getSender());
+        msg = new Packet("Arsch", lc, a);
+        System.out.println("NetID: " + msg.getNetworkID());
+        m = new Packet(msg.getRawData());
+        System.out.println("NetID: " + m.getNetworkID());
 
         // Actually check something in the test
         assertEquals("Consistency of raw data inside of a message",
