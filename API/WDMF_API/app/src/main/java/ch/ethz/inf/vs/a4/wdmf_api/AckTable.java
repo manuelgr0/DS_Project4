@@ -14,12 +14,8 @@ public class AckTable {
     }
 
     public AckTable(String node, Hashtable<String, Hashtable<String, Integer>> h) {
-        if (h.size() == 0)
-            throw new IllegalArgumentException("Hashtable must be non-empty.");
-        else {
             this.owner = node;
             this.hash = h;
-        }
     }
 
     public String getOwner() {

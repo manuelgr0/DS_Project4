@@ -166,30 +166,35 @@ public class Packet {
         //System.out.println("owner: " + owner);
         //System.out.println("mappings: " + s);
 
-        List<String> rows = new ArrayList<>();
-        Matcher mat = Pattern.compile("\\{(.*?)\\}").matcher(s);
-        while (mat.find())
-            rows.add(mat.group(1));
+        if (s.length() == 0) { // nothing in AckTable
+            ackT = new AckTable(owner, new Hashtable<String, Hashtable<String, Integer>>());
+        } else {
+            List<String> rows = new ArrayList<>();
+            Matcher mat = Pattern.compile("\\{(.*?)\\}").matcher(s);
+            while (mat.find())
+                rows.add(mat.group(1));
 
-        Hashtable<String, Hashtable<String, Integer>> hashtable = new Hashtable<>();
+            Hashtable<String, Hashtable<String, Integer>> hashtable = new Hashtable<>();
 
-        for (int i = 0; i < rows.size(); i++) {
-            Hashtable<String, Integer> h = new Hashtable<>();
-            indexData = s.indexOf("=");
-            String o1 = s.substring(0, indexData);
-            if ((indexData + 1) + (rows.get(i).length() + 2) < s.length()) { // not last mapping in string
-                s = s.substring((indexData+1) + (2+rows.get(i).length()+2)); // truncate s
+            for (int i = 0; i < rows.size(); i++) {
+                Hashtable<String, Integer> h = new Hashtable<>();
+                indexData = s.indexOf("=");
+                String o1 = s.substring(0, indexData);
+                if ((indexData + 1) + (rows.get(i).length() + 2) < s.length()) { // not last mapping in string
+                    s = s.substring((indexData + 1) + (2 + rows.get(i).length() + 2)); // truncate s
+                }
+                String[] row = rows.get(i).split(", ");
+                for (int j = 0; j < row.length; j++) {
+                    if (row[j].length() > 0) {
+                        String[] m = row[j].split("=");
+                        h.put(m[0], new Integer(m[1]));
+                    }
+                }
+                hashtable.put(o1, h);
             }
-            String[] row = rows.get(i).split(", ");
-            for (int j = 0; j < row.length; j++) {
-                String[] m = row[j].split("=");
-                h.put(m[0], new Integer(m[1]));
-            }
 
-            hashtable.put(o1, h);
+            ackT = new AckTable(owner, hashtable);
         }
-
-        ackT = new AckTable(owner, hashtable);
         System.out.println("toString of AckTable after parsing: " + ackT.toString());
     }
 
