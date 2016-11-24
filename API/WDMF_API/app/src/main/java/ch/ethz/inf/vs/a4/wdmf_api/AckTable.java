@@ -30,7 +30,7 @@ public class AckTable {
         if (hash.containsKey(sender) && hash.get(sender).containsKey(receiver)) {
             return hash.get(sender).get(receiver);
         } else {
-            return -1; //Value?
+            return -2; //Value?
         }
 
     }
@@ -49,9 +49,9 @@ public class AckTable {
         h.put(receiver, value);
     }
 
-    public void update(String receiver, Integer seqNo) {
-        if (receiver != owner && hash.containsKey(owner) && hash.get(owner).containsKey(receiver))
-            insert(owner, receiver, seqNo);
+    public void update(String sender, Integer seqNo) {
+        if (sender != owner && hash.containsKey(sender) && hash.get(sender).containsKey(owner))
+            insert(sender, owner, seqNo);
     }
 
     public boolean hasKey(String node) {
