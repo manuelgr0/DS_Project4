@@ -7,7 +7,6 @@ package ch.ethz.inf.vs.a4.wdmf_api;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.*;
