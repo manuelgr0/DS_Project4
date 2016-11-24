@@ -3,7 +3,6 @@ package ch.ethz.inf.vs.a4.wdmf_api;
 
 import java.util.Hashtable;
 
-//TODO: Add function to ask if the owner of an ACK-Table already got a message with given sender and sequence number
 
 public class AckTable {
 
@@ -11,7 +10,6 @@ public class AckTable {
     private String owner;
 
     public AckTable(String node) {
-        insert(node, node, -1);
         this.owner = node;
     }
 
@@ -26,6 +24,15 @@ public class AckTable {
 
     public String getOwner() {
         return owner;
+    }
+
+    public Integer get(String sender, String receiver) {
+        if (hash.containsKey(sender) && hash.get(sender).containsKey(receiver)) {
+            return hash.get(sender).get(receiver);
+        } else {
+            return -1; //Value?
+        }
+
     }
 
     private void insert(String sender, String receiver, Integer value) {
@@ -53,12 +60,40 @@ public class AckTable {
 
     public void delete(String node) {
         this.hash.remove(node);
-        for(String key : this.hash.keySet()){
+        for (String key : this.hash.keySet()) {
             this.hash.get(key).remove(node);
         }
     }
 
     public void merge(AckTable other) {
+
+        if (hash.isEmpty() && other.hash.isEmpty()) {
+            this.insert(owner, owner, -1);
+            other.insert(other.owner, other.owner, -1);
+            merge(other);
+            hash.get(owner).remove(owner);
+            hash.get(other.owner).remove(other.owner);
+            other.hash.get(other.owner).remove(other.owner);
+            return;
+
+        }
+
+
+        if (other.hash.isEmpty()) {
+            other.insert(other.owner, other.owner, -1);
+            merge(other);
+            this.hash.get(other.owner).remove(other.owner);
+            other.hash.get(other.owner).remove(other.owner);
+            return;
+        }
+
+        if (hash.isEmpty()) {
+            insert(owner, owner, -1);
+            merge(other);
+            hash.get(owner).remove(owner);
+            return;
+
+        }
 
         for (String keyS : other.hash.keySet()) {
             //This doesn't have keyS
