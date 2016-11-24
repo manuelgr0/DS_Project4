@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements WifiP2pManager.ConnectionInfoListener {
+public class MainActivity extends AppCompatActivity implements WifiP2pManager.ConnectionInfoListener, MessageTarget {
 
     WifiP2pManager mManager;
     WifiP2pManager.Channel mChannel;
@@ -76,6 +76,22 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
     protected void onPause() {
         super.onPause();
         unregisterReceiver(mReceiver);
+    }
+
+    @Override
+    protected void onStop() {
+        if (mManager != null && mChannel != null) {
+            mManager.removeGroup(mChannel, new WifiP2pManager.ActionListener() {
+                @Override
+                public void onFailure(int reasonCode) {
+                    Log.d("wifidirect:  ", "Disconnect failed. Reason :" + reasonCode);
+                }
+                @Override
+                public void onSuccess() {
+                }
+            });
+        }
+        super.onStop();
     }
 
     void discoverPeers() {
