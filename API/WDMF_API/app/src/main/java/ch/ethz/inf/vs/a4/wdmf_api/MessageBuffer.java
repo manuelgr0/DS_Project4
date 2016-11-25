@@ -1,6 +1,8 @@
 package ch.ethz.inf.vs.a4.wdmf_api;
 
 
+import android.util.Log;
+
 import java.lang.reflect.Array;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -32,6 +34,7 @@ final public class MessageBuffer {
 
     // For messages with a local origin, we don't know the seq_nr yet
     public void addLocalMessage(byte[] msg){
+        Log.d("Message Buffer", "Message buffer stores data:\n" + Arrays.toString(msg));
         EnumeratedMessage em = new EnumeratedMessage(msg, seq_nr, owner);
         if(memory_space < em.size() ) {
             makeSpace(em.size());

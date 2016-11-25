@@ -36,7 +36,8 @@
         <service
             android:name=".MainService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true"
+            android:label="WiFi Direct Message Flooding Service" ></service>
     </application>
 
 </manifest>

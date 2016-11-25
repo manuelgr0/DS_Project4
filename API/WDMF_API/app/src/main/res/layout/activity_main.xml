@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="WiFi Direct Message Flooding API"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
@@ -48,5 +49,33 @@
         android:layout_marginTop="48dp"
         android:id="@+id/messages"
         android:text="messages will be showed here" />
+
+    <Button
+        android:text="Start Service"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/startService"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true" />
+
+    <Button
+        android:text="Send msg1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/startService"
+        android:layout_alignParentStart="true"
+        android:id="@+id/send1"
+        android:layout_alignEnd="@+id/device" />
+
+    <Button
+        android:text="Send Msg2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/send2"
+        android:layout_alignBaseline="@+id/send1"
+        android:layout_alignBottom="@+id/send1"
+        android:layout_alignParentEnd="true"
+        android:layout_toEndOf="@+id/device" />
 
 </RelativeLayout>

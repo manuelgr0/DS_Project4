@@ -40,26 +40,27 @@ public abstract class WDMF_Connector {
     // IMPLEMENTATION
 
     Messenger sendingMessenger = null;
-    /** Flag indicating whether we have called bind on the service. */
+    Activity surroundingActivity;
     boolean bound;
 
-    public WDMF_Connector(){
-
+    //  Constructor, takes an Activity as parameter since it will be used later
+    public WDMF_Connector(Activity a){
+        surroundingActivity = a;
     }
 
     // Call in onStart of Activity
-    // TODO: Discuess how this could be improved, can we gat an Activity in another way? Extending Activity seems to be a bad idea.
-    public void connectToWDMF(Activity a) {
+    public void connectToWDMF() {
         // Bind to the service
-        a.bindService(new Intent(a, MainService.class), mConnection,
+        surroundingActivity.bindService(new Intent(surroundingActivity, MainService.class), mConnection,
                 Context.BIND_AUTO_CREATE);
+        bound = true;
     }
 
     // Call in onStop of Activity
     public void disconnectFromWDMF() {
         // Unbind from the service
         if (bound) {
-            a.unbindService(mConnection);
+            surroundingActivity.unbindService(mConnection);
             bound = false;
         }
     }
@@ -67,11 +68,11 @@ public abstract class WDMF_Connector {
     // Returns false in case something went wrong
     public boolean broadcastMessage(byte[] data) {
         if (!bound) {
-            Log.d("WDMF_Connector", "Error: The WDMF is not bound but a message wants to be broadcastet.");
+            Log.d("WDMF_Connector", "Error: The WDMF is not bound but a message wants to be broadcasted.");
             // TODO: retry
             return false;
         }
-
+        Log.d("WDMF_Connector", "broadcast message.");
         // Copy data
         byte[] dataCopy = Arrays.copyOfRange(data, 0, data.length);
 

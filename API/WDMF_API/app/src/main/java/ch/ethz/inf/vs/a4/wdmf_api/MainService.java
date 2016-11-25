@@ -48,8 +48,9 @@ public class MainService extends Service {
     class IncomingHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
+            Log.d("Main Service", "Service got a message");
             switch (msg.what) {
-                case IPC_MSG_SEND_SINGLE_MESSAGE:
+                case WDMF_Connector.IPC_MSG_SEND_SINGLE_MESSAGE:
                     if( (msg.obj instanceof byte[])) {
                         buffer.addLocalMessage((byte[])msg.obj);
                         localDataChanged();
@@ -58,7 +59,7 @@ public class MainService extends Service {
                         Log.d("MainService", "Error: we got a command to send out a message but no message was provided.");
                     }
                     break;
-                case IPC_MSG_SEND_MESSAGE_LIST:
+                case WDMF_Connector.IPC_MSG_SEND_MESSAGE_LIST:
                     if( (msg.obj instanceof ArrayList<?>)) {
                         ArrayList<byte[]> list = (ArrayList<byte[]>)msg.obj;
                         if(!list.isEmpty() && list.get(0) instanceof byte[]){

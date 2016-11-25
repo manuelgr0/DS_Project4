@@ -1,7 +1,9 @@
 package ch.ethz.inf.vs.a4.wdmf_api;
 
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
@@ -31,7 +33,12 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
     static final int SERVER_PORT = 4545;
     public static final int MESSAGE_READ = 0x400 + 1;
     public static final int MY_HANDLE = 0x400 + 2;
-
+    private final WDMF_Connector connector = new WDMF_Connector(this) {
+        @Override
+        public void onReceiveMessage() {
+            // Do nothing for now, calling it is not implemented yet anyway
+        }
+    };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,6 +69,41 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
                 connectPeers();
             }
         });
+
+
+        // SEND MSG TO SERVICE TESTER //
+
+        final Button btn = (Button) findViewById(R.id.startService);
+        btn.setOnClickListener(new View.OnClickListener() {
+            boolean on = false;
+            @Override
+            public void onClick(View v) {
+                if (on) {
+                    stopWDMFAPI();
+                    btn.setText("Start Service");
+                } else {
+                    startWDMFAPI();
+                    btn.setText("Stop Service");
+                }
+                on = !on;
+            }
+        });
+
+        Button btn_send1 = (Button) findViewById(R.id.send1);
+        btn_send1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                connector.broadcastMessage(new byte[]{1,2,3});
+            }
+        });
+        Button btn_send2 = (Button) findViewById(R.id.send2);
+        btn_send2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                connector.broadcastMessage(new byte[]{-1,-2,-3});
+            }
+        });
+
     }
 
     /* register the broadcast receiver with the intent values to be matched */
@@ -91,7 +133,14 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
                 }
             });
         }
+        connector.disconnectFromWDMF();
         super.onStop();
+    }
+
+    @Override
+    protected void onStart() {
+        connector.connectToWDMF();
+        super.onStart();
     }
 
     void discoverPeers() {
@@ -190,4 +239,18 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
     void setPeersList(ArrayList<WifiP2pDevice> a) {
         this.peers_list = a;
     }
+
+    void startWDMFAPI(){
+        Intent i = new Intent();
+        i.setComponent(new ComponentName("ch.ethz.inf.vs.a4.wdmf_api", "ch.ethz.inf.vs.a4.wdmf_api.MainService"));
+        //ComponentName c = startService(i);
+        startService(i);
+    }
+
+    void stopWDMFAPI(){
+        Intent i = new Intent();
+        i.setComponent(new ComponentName("ch.ethz.inf.vs.a4.wdmf_api", "ch.ethz.inf.vs.a4.wdmf_api.MainService"));
+        stopService(i);
+    }
+
 }
