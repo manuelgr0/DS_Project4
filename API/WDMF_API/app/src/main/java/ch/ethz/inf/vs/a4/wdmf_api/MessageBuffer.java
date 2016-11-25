@@ -12,7 +12,6 @@ import java.util.Arrays;
 
 // TODO: Split up large messages
 // TODO: Replacement policy
-// TODO: Unittests
 
 final public class MessageBuffer {
     private int seq_nr = AckTable.INIT_SEQ_NR + 1;
@@ -147,7 +146,7 @@ class EnumeratedMessage{
         for(int i = 0; i < name_length; i++){
             result[i + 8] = name[i];
         }
-        for(int i = 0; i < result.length; i++){
+        for(int i = 0; i < msg.length; i++){
             result[i + 8 + name_length] = msg[i];
         }
 
