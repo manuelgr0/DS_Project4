@@ -53,6 +53,21 @@ final public class MessageBuffer {
         memory_space -= em.size();
     }
 
+    // Call this function when you no longer need a message in the buffer
+    // The first occurrence of such a message will be removed from the buffer
+    // Returns true when the message was found and deleted
+    // Returns false when the message was not in the buffer
+    public boolean removeMessage(String sender, int seq_number){
+        for(int i = 0; i < buffer.size(); i++){
+            if(buffer.get(i).sender.equals(sender) && buffer.get(i).seq == seq_number){
+                memory_space += buffer.get(i).size();
+                buffer.remove(i);
+                return true;
+            }
+        }
+        return false;
+    }
+
     // Creates a list of raw data arrays containing all the enumerated messages
     // that has not reached the specified receiver yet
     public ArrayList<byte[]> getMessagesForReceiver(String receiver, AckTable at){
@@ -68,9 +83,18 @@ final public class MessageBuffer {
 
     // Kick out messages until we have at least X bytes free memory
     private void makeSpace(int bytes){
-        //TODO
-        throw new OutOfMemoryError();
-        // Best fix: memory_space += bytes :)
+        // Remove buffer until we have enough space
+        while(bytes > memory_space && !buffer.isEmpty()){
+
+            // TODO: change replacement policy here
+            // Remove oldest
+            bytes -= buffer.get(0).size();
+            memory_space += buffer.get(0).size();
+            buffer.remove(0);
+        }
+        if (bytes > 0) {
+            throw new OutOfMemoryError();
+        }
     }
 
 }
