@@ -33,9 +33,9 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
     static final int SERVER_PORT = 4545;
     public static final int MESSAGE_READ = 0x400 + 1;
     public static final int MY_HANDLE = 0x400 + 2;
-    private final WDMF_Connector connector = new WDMF_Connector(this) {
+    private final WDMF_Connector connector = new WDMF_Connector(this, "Test App from Manu and Köbi") {
         @Override
-        public void onReceiveMessage() {
+        public void onReceiveMessage(byte[] msg) {
             // Do nothing for now, calling it is not implemented yet anyway
         }
     };

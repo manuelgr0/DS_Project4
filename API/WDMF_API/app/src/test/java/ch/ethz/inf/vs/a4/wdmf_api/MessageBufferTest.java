@@ -11,6 +11,7 @@ import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
+
 public class MessageBufferTest {
     @Test
     public void buildMessageBuffer(){
@@ -18,9 +19,9 @@ public class MessageBufferTest {
         MessageBuffer buf = new MessageBuffer("Jakob", 1000);
 
         // Add some messages
-        buf.addLocalMessage(new byte[]{0,1,2,3,4,5,6,7,8,9});
-        buf.addLocalMessage(new byte[]{10,11,12,13,14,15,16,17,18,19});
-        buf.addLocalMessage(new byte[]{20,21,22,23,24,25,26,27,28,29});
+        buf.addLocalMessage(new byte[]{0,1,2,3,4,5,6,7,8,9}, 0);
+        buf.addLocalMessage(new byte[]{10,11,12,13,14,15,16,17,18,19}, 0);
+        buf.addLocalMessage(new byte[]{20,21,22,23,24,25,26,27,28,29}, 0);
 
         // Create ACK tables
         AckTable at1 = new AckTable("Jakob");
@@ -68,12 +69,12 @@ public class MessageBufferTest {
         byte[] msg = new byte[60];
         msg[50] = 6;
 
-        buf.addLocalMessage(msg);
+        buf.addLocalMessage(msg, 0);
         ArrayList<byte[]> toSend1 = buf.getMessagesForReceiver("Manuel", at1);
 
         msg[50] = 0;
         msg[59] = 77;
-        buf.addLocalMessage(msg);
+        buf.addLocalMessage(msg, 0);
         ArrayList<byte[]> toSend2 = buf.getMessagesForReceiver("Manuel", at1);
 
         // Check content of buffer
