@@ -17,8 +17,10 @@ import java.net.Socket;
 
 public class ServerAsyncTask extends AsyncTask {
     private Context context;
+    private static boolean serverexist;
+    public static ServerSocket serverSocket;
 
-    public ServerAsyncTask(Context context) {
+    public ServerAsyncTask(Context context) throws IOException {
         this.context = context;
     }
 
@@ -29,7 +31,10 @@ public class ServerAsyncTask extends AsyncTask {
              * Create a server socket and wait for client connections. This
              * call blocks until a connection is accepted from a client
              */
-            ServerSocket serverSocket = new ServerSocket(8888);
+            if(!serverexist) {
+                serverSocket = new ServerSocket(8088);
+                serverexist = true;
+            }
             Socket client = serverSocket.accept();
 
             /**
@@ -38,9 +43,11 @@ public class ServerAsyncTask extends AsyncTask {
               */
 
             InputStream inputstream = client.getInputStream();
-            String input = inputstream.toString();
+            while (inputstream.available() < 10);
+            byte[] b = new byte[inputstream.available()];
+            inputstream.read(b);
+            String input = new String(b, "UTF-8");
             Log.d("GOT INPUT:   ", input);
-            serverSocket.close();
             return input;
         } catch (IOException e) {
             Log.e("Exception : ", e.getMessage());

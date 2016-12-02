@@ -3,6 +3,7 @@ package ch.ethz.inf.vs.anicolus.test;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.net.Uri;
+import android.util.Log;
 import android.view.View;
 
 import java.io.IOException;
@@ -40,23 +41,23 @@ public class ClientTask extends Thread {
                       * port, and timeout information.
                       */
                     socket.bind(null);
-                    socket.connect((new InetSocketAddress(host, port)), 500);
+                    socket.connect(new InetSocketAddress(host, port));
+
+                    if(socket.isConnected())
+                        Log.d("+++++CONNECTED+++++++", "   ");
 
                     /**
-                          * Create a byte stream from a JPEG file and pipe it to the output stream
+                          * Create a byte stream from a String and pipe it to the output stream
                           * of the socket. This data will be retrieved by the server device.
                           */
                     OutputStream outputStream = socket.getOutputStream();
-                    ContentResolver cr = context.getContentResolver();
-                    InputStream inputStream = null;
-                    inputStream = cr.openInputStream(Uri.parse("hallo"));
-                    while ((len = inputStream.read(buf)) != -1) {
-                        outputStream.write(buf, 0, len);
-                    }
+                    String input = "Hallo ...?";
+                    outputStream.write(input.getBytes("UTF-8"));
                     outputStream.close();
-                    inputStream.close();
                 } catch (IOException e) {
                     //catch logic
+                    e.printStackTrace();
+                    Log.d("blabla", "bliblubla");
                 }
 
 /**

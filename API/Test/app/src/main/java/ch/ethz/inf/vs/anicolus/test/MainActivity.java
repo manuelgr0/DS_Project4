@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -74,12 +75,6 @@ public class MainActivity extends AppCompatActivity {
                         mManager.requestConnectionInfo(mChannel, new WifiP2pManager.ConnectionInfoListener() {
                             @Override
                             public void onConnectionInfoAvailable(WifiP2pInfo info) {
-                                // InetAddress from WifiP2pInfo struct.
-                                try {
-                                    InetAddress groupOwnerAddress = InetAddress.getByName(info.groupOwnerAddress.getHostAddress());
-                                } catch (UnknownHostException e) {
-                                    e.printStackTrace();
-                                }
 
                                 Log.d("groupowner is     ", info.groupOwnerAddress.getHostAddress());
 
@@ -91,7 +86,12 @@ public class MainActivity extends AppCompatActivity {
                                     new Thread(new Runnable() {
                                         @Override
                                         public void run() {
-                                            ServerAsyncTask server = new ServerAsyncTask(getBaseContext());
+                                            ServerAsyncTask server = null;
+                                            try {
+                                                server = new ServerAsyncTask(getBaseContext());
+                                            } catch (IOException e) {
+                                                e.printStackTrace();
+                                            }
                                             Object res = server.doInBackground(new Object[1]);
                                             final TextView text = (TextView) findViewById(R.id.textView3);
                                             final String devices_result = text.getText().toString() + "\n" + res.toString();
@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
                                     // you'll want to create a client thread that connects to the group
                                     // owner.
 
-                                    ClientTask client = new ClientTask(getBaseContext(), info.groupOwnerAddress.getHostAddress(), 8888);
+                                    ClientTask client = new ClientTask(getBaseContext(), info.groupOwnerAddress.getHostAddress(), 8088);
                                     client.run();
                                 }
                             }
@@ -121,6 +121,18 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        try {
+            if (ServerAsyncTask.serverSocket == null) {
+                ServerAsyncTask.serverSocket.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     void discoverPeers() {
