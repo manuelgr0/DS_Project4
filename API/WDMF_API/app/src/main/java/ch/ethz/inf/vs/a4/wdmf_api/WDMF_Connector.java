@@ -1,6 +1,5 @@
 package ch.ethz.inf.vs.a4.wdmf_api;
 
-import android.app.Activity;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
@@ -39,6 +38,9 @@ public abstract class WDMF_Connector extends Service {
     public static final int IPC_MSG_RECV_MESSAGE_LIST = 4;
     // Send this to the main Service to start listening to the messages with our appID
     public static final int IPC_MSG_LISTEN = 5;
+    // This is used to find where exactly the Service resides in the namespace
+    private static final String packageName = "ch.ethz.inf.vs.a4.wdmf_api";
+    private static final String serviceName = "ch.ethz.inf.vs.a4.wdmf_api.MainService";
 
     // ABSTRACT PART ( MUST OVERWRITE )
 
@@ -55,13 +57,13 @@ public abstract class WDMF_Connector extends Service {
     Messenger sendingMessenger = null;
     final Messenger receivingMessenger = new Messenger(new IncomingHandler());
     int appID;
-    Activity surroundingActivity;
+    Context surroundingContext;
     boolean bound;
 
-    //  Constructor, takes an Activity as parameter since it will be used later
+    //  Constructor, takes a Context as parameter since it will be used later
     //  The application tag should be consistent among all apps who want to receive messages from eachother
-    public WDMF_Connector(Activity a, String applicationTag){
-        surroundingActivity = a;
+    public WDMF_Connector(Context c, String applicationTag){
+        surroundingContext = c;
 
         // generate a appID dependent of the provided String tag
         appID = 7;
@@ -70,10 +72,12 @@ public abstract class WDMF_Connector extends Service {
         }
     }
 
-    // Call in onStart of Activity
+    // Call in onStart of Context
     public void connectToWDMF() {
         // Bind to the service
-        surroundingActivity.bindService(new Intent(surroundingActivity, MainService.class), mConnection,
+        Intent intentForMainService = new Intent();
+        intentForMainService.setComponent(new ComponentName(packageName, serviceName));
+        surroundingContext.bindService(intentForMainService, mConnection,
                 Context.BIND_AUTO_CREATE);
         bound = true;
 
@@ -87,11 +91,11 @@ public abstract class WDMF_Connector extends Service {
         }
     }
 
-    // Call in onStop of Activity
+    // Call in onStop of Context
     public void disconnectFromWDMF() {
         // Unbind from the service
         if (bound) {
-            surroundingActivity.unbindService(mConnection);
+            surroundingContext.unbindService(mConnection);
             bound = false;
         }
     }
