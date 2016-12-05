@@ -79,16 +79,8 @@ public abstract class WDMF_Connector extends Service {
         intentForMainService.setComponent(new ComponentName(packageName, serviceName));
         surroundingContext.bindService(intentForMainService, mConnection,
                 Context.BIND_AUTO_CREATE);
-        bound = true;
 
-        // Register to listen to messages with our appID
-        Message msg = Message.obtain(null, IPC_MSG_LISTEN, appID, 0);
-        try {
-            sendingMessenger.send(msg);
-        } catch (RemoteException e) {
-            Log.d("WDMF_Connector", "Couldn't reach WDMF main service, please make sure it is running.");
-            e.printStackTrace();
-        }
+        // BindService is asynchronous, so the rest of the setup happens in onServiceConnected
     }
 
     // Call in onStop of Context
@@ -168,6 +160,15 @@ public abstract class WDMF_Connector extends Service {
             // representation of that from the raw IBinder object.
             sendingMessenger = new Messenger(service);
             bound = true;
+
+            // Register to listen to messages with our appID
+            Message msg = Message.obtain(null, IPC_MSG_LISTEN, appID, 0);
+            try {
+                sendingMessenger.send(msg);
+            } catch (RemoteException e) {
+                Log.d("WDMF_Connector", "Couldn't reach WDMF main service, please make sure it is running.");
+                e.printStackTrace();
+            }
         }
 
         public void onServiceDisconnected(ComponentName className) {
