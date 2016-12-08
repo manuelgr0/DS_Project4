@@ -16,7 +16,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.io.IOException;
 import java.net.InetAddress;
+import java.net.Socket;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -108,6 +110,30 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+        Button button2 = (Button) findViewById(R.id.button2);
+        button2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                chat = new ChatManager(new Socket(), myHandler, "Client!!!!");
+                new Thread(chat).start();
+                /*Log.d("MainActivity ", "send clicked");
+                try {
+                    Log.d("hi", "test1");
+                    Socket socket = groupSocket.socket.accept();
+
+                    Log.d("hi", "test2");
+                    chat = new ChatManager(socket, myHandler, "Group!!!!");
+
+                    Log.d("hi", "test3");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                Log.d("MainActivity ", "send clicked -> about to start thread");
+                new Thread(chat).start();*/
+            }
+        });
+
         mBRReceiver = new MainBCReceiver();
         filter = new IntentFilter();
         filter.addAction(WifiAccessPoint.DSS_WIFIAP_VALUES);

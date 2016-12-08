@@ -177,8 +177,14 @@ public class WifiServiceSearcher  implements WifiP2pManager.ChannelListener{
                     public void run() {
                         p2p.discoverServices(channel, new WifiP2pManager.ActionListener() {
                             public void onSuccess() {
-                                Log.d(TAG, "Started service discovery");
-                                myServiceState = ServiceState.DiscoverService;
+                                p2p.discoverServices(channel, new WifiP2pManager.ActionListener() {
+                                    public void onSuccess() {
+                                        Log.d(TAG, "Started service discovery");
+                                        myServiceState = ServiceState.DiscoverService;
+                                    }
+                                    public void onFailure(int reason) {Log.d(TAG, "Starting service discovery failed, error code " + reason);}
+                                });
+
                             }
                             public void onFailure(int reason) {Log.d(TAG, "Starting service discovery failed, error code " + reason);}
                         });
