@@ -27,22 +27,22 @@ public class ChatManager implements Runnable {
 
     private InputStream iStream;
     private OutputStream oStream;
-    private static final String TAG = "ChatHandler";
+                    private static final String TAG = "ChatHandler";
 
-    @Override
-    public void run() {
-        try {
+                    @Override
+                    public void run() {
+                        try {
 
-            iStream = socket.getInputStream();
-            oStream = socket.getOutputStream();
-            byte[] buffer = new byte[1048576]; //Megabyte buffer
-            int bytes;
-            handler.obtainMessage(MainActivity.MY_HANDLE, this).sendToTarget();
+                            iStream = socket.getInputStream();
+                            oStream = socket.getOutputStream();
+                            byte[] buffer = new byte[1048576]; //Megabyte buffer
+                            int bytes;
+                            handler.obtainMessage(MainActivity.MY_HANDLE, this).sendToTarget();
 
-            while (true) {
-                try {
-                    // Read from the InputStream
-                    bytes = iStream.read(buffer);
+                            while (true) {
+                                try {
+                                    // Read from the InputStream
+                                    bytes = iStream.read(buffer);
                     if (bytes == -1) {
                         break;
                     }
