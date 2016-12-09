@@ -5,11 +5,13 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -23,7 +25,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements WifiP2pManager.ConnectionInfoListener, MessageTarget {
+public class MainActivity extends AppCompatActivity implements WifiP2pManager.ConnectionInfoListener/*, MessageTarget*/ {
 
     WifiP2pManager mManager;
     WifiP2pManager.Channel mChannel;
@@ -71,7 +73,6 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
             }
         });
 
-
         // SEND MSG TO SERVICE TESTER //
 
         final Button btn = (Button) findViewById(R.id.startService);
@@ -102,6 +103,15 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
             @Override
             public void onClick(View v) {
                 connector.broadcastMessage(new byte[]{-1,-2,-3});
+                Log.d("XXXX", "Buffer Size:"  + connector.get_buffer_size() + "KB");
+            }
+        });
+        Button btn_settings = (Button) findViewById(R.id.settingsButton);
+        btn_settings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent myIntent = new Intent(MainActivity.this, SettingsActivity.class);
+                MainActivity.this.startActivity(myIntent);
             }
         });
 
@@ -213,7 +223,7 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
         }
 
         // After the group negotiation, we can determine the group owner.
-        if (info.groupFormed && info.isGroupOwner) {
+       /* if (info.groupFormed && info.isGroupOwner) {
             // Do whatever tasks are specific to the group owner.
             // One common case is creating a server thread and accepting
             // incoming connections.
@@ -234,7 +244,7 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
             handler.start();
         }
         chatFragment = new WiFiChatFragment();
-        getFragmentManager().beginTransaction().replace(R.id.container_root, chatFragment).commit();
+        getFragmentManager().beginTransaction().replace(R.id.container_root, chatFragment).commit();*/
     }
 
     ArrayList<WifiP2pDevice> getPeersList() {
@@ -248,7 +258,21 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
     void startWDMFAPI(){
         Intent i = new Intent();
         i.setComponent(new ComponentName("ch.ethz.inf.vs.a4.wdmf_api", "ch.ethz.inf.vs.a4.wdmf_api.MainService"));
-        //ComponentName c = startService(i);
+
+        //read preferences before starting the service /*this should happen in the service*/
+       /* SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        String bufferSize = pref.getString(getResources().getString(R.string.pref_key_buffer_size),
+                            (getResources().getString(R.string.pref_default_buffer_size)));
+        String networkName = pref.getString(getResources().getString(R.string.pref_key_network_name),
+                (getResources().getString(R.string.pref_default_network_name)));
+        String timeout = pref.getString(getResources().getString(R.string.pref_key_timeout),
+                (getResources().getString(R.string.pref_default_timeout)));*/
+
+        // Here we trust that the preference stores a proper int string, which we ensure with the listener
+        //i.putExtra("bufferSize", Long.valueOf(bufferSize));
+        //i.putExtra("timeout", Integer.valueOf(timeout));
+        //i.putExtra("networkName", networkName);
+
         startService(i);
     }
 
