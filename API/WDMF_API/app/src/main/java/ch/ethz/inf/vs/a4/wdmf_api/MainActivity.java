@@ -103,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
             @Override
             public void onClick(View v) {
                 connector.broadcastMessage(new byte[]{-1,-2,-3});
+                connector.setNetworkTag("New Name");
                 Log.d("XXXX", "Buffer Size:"  + connector.get_buffer_size() + "KB");
             }
         });

@@ -5,14 +5,14 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -42,13 +42,13 @@ public abstract class WDMF_Connector extends Service {
     // Send this to the main Service to start listening to the messages with our appID
     // Make sure to write the Receiving Messenger in the replyTo field of the message
     public static final int IPC_MSG_LISTEN = 5;
-    // Getting and setting the configuration values. Getter must provide replyTo values
+    // Setting the configuration values. ACKs will come back with true / false in first argument
     public static final int IPC_MSG_SET_TAG = 6;
-    public static final int IPC_MSG_GET_TAG = 7;
+    public static final int IPC_MSG_SET_TAG_ACK = 7;
     public static final int IPC_MSG_SET_TIMEOUT = 8;
-    public static final int IPC_MSG_GET_TIMEOUT = 9;
+    public static final int IPC_MSG_SET_TIMEOUT_ACK = 9;
     public static final int IPC_MSG_SET_BUFFER_SIZE = 10;
-    public static final int IPC_MSG_GET_BUFFER_SIZE = 11;
+    public static final int IPC_MSG_SET_BUFFER_SIZE_ACK = 11;
     // This is used to find where exactly the Service resides in the namespace
     private static final String packageName = "ch.ethz.inf.vs.a4.wdmf_api";
     private static final String serviceName = "ch.ethz.inf.vs.a4.wdmf_api.MainService";
@@ -56,7 +56,8 @@ public abstract class WDMF_Connector extends Service {
     static final String networkNamePK = "PK network name";
     static final String timeoutPK = "PK timeout";
     static final String bufferSizePK = "PK buffer size";
-
+    // And for reading the content Provider
+    static final String MyPrefsUri = "content://ch.ethz.inf.vs.a4.wdmf_api.provider/any";
     // ABSTRACT PART ( MUST OVERWRITE )
 
     public abstract void onReceiveMessage(byte[] message);
@@ -134,56 +135,105 @@ public abstract class WDMF_Connector extends Service {
     }
 
     public String getNetworkTag(){
-        // Create and send a request to the service
-        Message msg = Message.obtain(null, IPC_MSG_GET_TAG);
+        try{
+            Cursor prefsCursor = surroundingContext.getContentResolver().query(Uri.parse(MyPrefsUri), null, null, null,null);
+            prefsCursor.moveToFirst();
+            String result =  prefsCursor.getString(prefsCursor.getColumnIndex(bufferSizePK));
+            prefsCursor.close();
+            return result;
+        }catch (Exception e){
+            e.printStackTrace();
+            return "No network found";
+        }
+    }
+
+    public void setNetworkTag(String networkTag){
+        if (!bound) {
+            Log.d("WDMF_Connector", "Error: The WDMF is not bound but a command to change the network tag appeared.");
+            return;
+        }
+        Log.d("WDMF_Connector", "Send IPC Message to set the network tag to " + networkTag);
+
+        // Create and send a message to the service
+        Message msg = Message.obtain(null, IPC_MSG_SET_TAG, appID, 0);
+        Bundle b = new Bundle();
+        b.putString(networkNamePK, networkTag);
+        msg.setData(b);
         msg.replyTo = receivingMessenger;
 
         try {
             sendingMessenger.send(msg);
         } catch (RemoteException e) {
+            Log.d("WDMF_Connector", "Error: Sending the IPC message to change the network tag failed");
             e.printStackTrace();
         }
-
-        // TODO: Wait for answer and return (blocking in here?)
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    public void setNetworkTag(String networkTag){
-        // TODO: Implement
-        throw new UnsupportedOperationException("Not implemented yet");
     }
 
     public long get_buffer_size(){
-        // TODO: W/SharedPreferencesImpl:
-        // Attempt to read preferences file
-        // /data/user/0/ch.ethz.inf.vs.a4.wdmf_api/shared_prefs/ch.ethz.inf.vs.a4.wdmf_api_preferences.xml
-        // without permission
         try{
-            Context theirContext = surroundingContext.createPackageContext(packageName, Context.CONTEXT_IGNORE_SECURITY);
-            SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(theirContext);
-            String lbufferSize = pref.getString(bufferSizePK, "-1");
-            return Long.valueOf(lbufferSize);
+            Cursor prefsCursor = surroundingContext.getContentResolver().query(Uri.parse(MyPrefsUri), null, null, null,null);
+            prefsCursor.moveToFirst();
+            long result =  prefsCursor.getLong(prefsCursor.getColumnIndex(bufferSizePK));
+            prefsCursor.close();
+            return result;
         }catch (Exception e){
             e.printStackTrace();
             return -2;
         }
-
-//        throw new UnsupportedOperationException("Not implemented yet");
     }
 
     public void set_buffer_size(long buffersize){
-        // TODO: Implement
-        throw new UnsupportedOperationException("Not implemented yet");
+        if (!bound) {
+            Log.d("WDMF_Connector", "Error: The WDMF is not bound but a command to change the max buffer size appeared.");
+            return;
+        }
+        Log.d("WDMF_Connector", "Send IPC Message to set the buffer size to " + buffersize);
+
+        // Create and send a message to the service
+        Message msg = Message.obtain(null, IPC_MSG_SET_BUFFER_SIZE, appID, 0);
+        Bundle b = new Bundle();
+        b.putLong(bufferSizePK, buffersize);
+        msg.setData(b);
+        msg.replyTo = receivingMessenger;
+
+        try {
+            sendingMessenger.send(msg);
+        } catch (RemoteException e) {
+            Log.d("WDMF_Connector", "Error: Sending the IPC message to change the buffer size failed");
+            e.printStackTrace();
+        }
     }
 
-    public double get_timeout() {
-        // TODO: Implement
-        throw new UnsupportedOperationException("Not implemented yet");
+    public int get_timeout() {
+        try{
+            Cursor prefsCursor = surroundingContext.getContentResolver().query(Uri.parse(MyPrefsUri), null, null, null,null);
+            prefsCursor.moveToFirst();
+            int result =  prefsCursor.getInt(prefsCursor.getColumnIndex(timeoutPK));
+            prefsCursor.close();
+            return result;
+        }catch (Exception e){
+            e.printStackTrace();
+            return -2;
+        }
     }
 
-    public void set_timeout(double timeout){
-        // TODO: Implement
-        throw new UnsupportedOperationException("Not implemented yet");
+    public void set_timeout(int timeout){
+        if (!bound) {
+            Log.d("WDMF_Connector", "Error: The WDMF is not bound but a command to change the timeout appeared.");
+            return;
+        }
+        Log.d("WDMF_Connector", "Send IPC Message to set the timeout to " + timeout);
+
+        // Create and send a message to the service
+        Message msg = Message.obtain(null, IPC_MSG_SET_TIMEOUT, appID, timeout);
+        msg.replyTo = receivingMessenger;
+
+        try {
+            sendingMessenger.send(msg);
+        } catch (RemoteException e) {
+            Log.d("WDMF_Connector", "Error: Sending the IPC message to change the timeout failed");
+            e.printStackTrace();
+        }
     }
 
 

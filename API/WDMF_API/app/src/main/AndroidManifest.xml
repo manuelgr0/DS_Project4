@@ -41,7 +41,13 @@
 
         <activity
             android:name=".SettingsActivity"
-            android:label="@string/title_activity_settings"></activity>
+            android:label="@string/title_activity_settings" />
+
+        <provider
+            android:name=".PreferencesContentProvider"
+            android:authorities="ch.ethz.inf.vs.a4.wdmf_api.provider"
+            android:enabled="true"
+            android:exported="true"></provider>
     </application>
 
 </manifest>
