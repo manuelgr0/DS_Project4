@@ -1,3 +1,21 @@
 <resources>
     <string name="app_name">WDMF_API</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Strings related to Settings -->
+
+    <string name="pref_header_basic">Basic Settings</string>
+
+    <string name="pref_title_network_name">Network name</string>
+    <string name="pref_default_network_name">Public</string>
+
+    <string name="pref_title_timeout">Network timeout</string>
+    <string name="pref_dialog_title_timeout">Timeout in min</string>
+    <string name="pref_default_timeout">20</string>
+
+    <string name="pref_title_buffer_size">Memory limit</string>
+    <string name="pref_dialog_title_buffer_size">Buffer limit in KB</string>
+    <string name="pref_default_buffer_size">1000</string>
+
+
 </resources>

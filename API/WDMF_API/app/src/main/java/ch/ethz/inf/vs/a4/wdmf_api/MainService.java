@@ -1,11 +1,16 @@
 package ch.ethz.inf.vs.a4.wdmf_api;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
+import android.os.RemoteException;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.SparseArray;
 
@@ -23,15 +28,61 @@ public class MainService extends Service {
     // To send the messages back according to the AppID
     private SparseArray<Messenger> sendingMessengers = new SparseArray<>();
 
-    // Constructor
-    public MainService() {
-        // TODO Retrieve setting from preferences
+    // Configuration values
+    String networkName = "MyNetworkName";
+    long maxBufferSize = 1000000;
+    int timeout = 30*60;
 
-        buffer = new MessageBuffer("MyNetworkName", 1000000);
+    // Constructor
+    //public MainService() {
+    // NOTE: Don't think about using this, there are reasons why we have onStartCommand
+    //       Here, the service is not initialised and reading its context or similar stuff may lead to NPEs
+    //}
+
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId){
+        updateFromPreferences();
+        buffer = new MessageBuffer(networkName, 1000 * maxBufferSize);
+        return START_STICKY;
     }
 
+    private void updateFromPreferences(){
 
+        //Read preferences
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        String lbufferSize = pref.getString(WDMF_Connector.bufferSizePK,
+                (getResources().getString(R.string.pref_default_buffer_size)));
+        String lnetworkName = pref.getString(WDMF_Connector.networkNamePK,
+                (getResources().getString(R.string.pref_default_network_name)));
+        String ltimeout = pref.getString(WDMF_Connector.timeoutPK,
+                (getResources().getString(R.string.pref_default_timeout)));
 
+        // Apply preferences
+        updateBufferSize(Long.valueOf(lbufferSize));
+        updateNetworkName(lnetworkName);
+        updateTimeout(timeout = Integer.valueOf(ltimeout));
+    }
+
+    private void updateBufferSize(long newSize){
+        if (buffer != null){
+            long diff = maxBufferSize - newSize;
+            if(diff < 0){
+                buffer.decreaseBufferSize((int)-diff);
+            } else if (diff > 0){
+                buffer.increaseBufferSize(diff);
+            }
+        }
+        maxBufferSize = newSize;
+    }
+    private void updateNetworkName(String newName){
+        // TODO?
+        networkName = newName;
+    }
+    private void updateTimeout(int newTimeout){
+        // TODO?
+        timeout = newTimeout;
+    }
     /**
      * When binding to the service, we return an interface to our messenger
      * for sending messages to the service.
@@ -53,14 +104,15 @@ public class MainService extends Service {
         public void handleMessage(Message msg) {
             Log.d("Main Service", "Service got a message");
 
-            // store (or possibly update) messenger to send the messages back
-            // Per appTag only one App can listen to an appTag at the time, is that a problem?
-            sendingMessengers.put(msg.arg1, new Messenger(msg.replyTo.getBinder()) );
+            // Used in case an answer is requested and replTo is provided
+            Message answer = null;
 
             switch (msg.what) {
                 case WDMF_Connector.IPC_MSG_SEND_SINGLE_MESSAGE:
-                    if( (msg.obj instanceof byte[])) {
-                        buffer.addLocalMessage((byte[])msg.obj, msg.arg1);
+                    Bundle bnd = msg.getData();
+                    byte[] data = bnd.getByteArray("data");
+                    if( data != null) {
+                        buffer.addLocalMessage(data, msg.arg1);
                         localDataChanged();
                     }
                     else {
@@ -86,10 +138,37 @@ public class MainService extends Service {
                     }
                     break;
                 case WDMF_Connector.IPC_MSG_LISTEN:
-                    sendingMessengers.put(msg.arg1, new Messenger(msg.replyTo.getBinder()) );
+                    // store (or possibly update) messenger to send the messages back
+                    if(msg.replyTo != null){
+                        sendingMessengers.put(msg.arg1, new Messenger(msg.replyTo.getBinder()) );
+                    } else {
+                        Log.d("MainService", "Error: Listener could not be registered because the replyTo field of the IPC Message was null. Message data: " + msg.toString());
+                    }
+                    break;
+                case WDMF_Connector.IPC_MSG_GET_TAG:
+                    answer = Message.obtain(null, WDMF_Connector.IPC_MSG_GET_TAG, networkName);
+                    break;
+                case WDMF_Connector.IPC_MSG_GET_BUFFER_SIZE:
+                    answer = Message.obtain(null, WDMF_Connector.IPC_MSG_GET_BUFFER_SIZE, Long.valueOf(maxBufferSize));
+                    break;
+                case WDMF_Connector.IPC_MSG_GET_TIMEOUT:
+                    answer = Message.obtain(null, WDMF_Connector.IPC_MSG_GET_TIMEOUT, timeout, 0);
                     break;
                 default:
                     super.handleMessage(msg);
+            }
+
+            // Send answer
+            if(answer != null){
+                if (msg.replyTo == null) {
+                    Log.d("MainService", "Answer could not be sent because the receiver was missing in the replyTo field");
+                }else {
+                    try {
+                        msg.replyTo.send(msg);
+                    } catch (RemoteException e) {
+                        Log.d("MainService", "Answer could not be sent because of a remote exception", e);
+                    }
+                }
             }
         }
     }

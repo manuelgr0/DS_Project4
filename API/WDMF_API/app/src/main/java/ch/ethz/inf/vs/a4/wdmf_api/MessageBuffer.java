@@ -84,7 +84,16 @@ final public class MessageBuffer {
         return result;
     }
 
+    public void increaseBufferSize(long n){
+        memory_space += n;
+    }
+
+    public void decreaseBufferSize(int n){
+        makeSpace(n);
+    }
+
     // Kick out messages until we have at least X bytes free memory
+    // Throws OutOfMemoryError if the entire buffer is smaller than the required bytes
     private void makeSpace(int bytes){
         // Remove buffer until we have enough space
         while(bytes > memory_space && !buffer.isEmpty()){

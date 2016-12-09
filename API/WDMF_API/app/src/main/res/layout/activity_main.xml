@@ -78,4 +78,14 @@
         android:layout_alignParentEnd="true"
         android:layout_toEndOf="@+id/device" />
 
+    <Button
+        android:text="settings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/settingsButton"
+        style="@style/Widget.AppCompat.Button"
+        android:layout_above="@+id/send1"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true" />
+
 </RelativeLayout>

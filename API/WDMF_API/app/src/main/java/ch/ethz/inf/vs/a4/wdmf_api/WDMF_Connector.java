@@ -5,11 +5,14 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -37,10 +40,22 @@ public abstract class WDMF_Connector extends Service {
     // They will be stored in a ArrayList and put it in the field with the name obj.
     public static final int IPC_MSG_RECV_MESSAGE_LIST = 4;
     // Send this to the main Service to start listening to the messages with our appID
+    // Make sure to write the Receiving Messenger in the replyTo field of the message
     public static final int IPC_MSG_LISTEN = 5;
+    // Getting and setting the configuration values. Getter must provide replyTo values
+    public static final int IPC_MSG_SET_TAG = 6;
+    public static final int IPC_MSG_GET_TAG = 7;
+    public static final int IPC_MSG_SET_TIMEOUT = 8;
+    public static final int IPC_MSG_GET_TIMEOUT = 9;
+    public static final int IPC_MSG_SET_BUFFER_SIZE = 10;
+    public static final int IPC_MSG_GET_BUFFER_SIZE = 11;
     // This is used to find where exactly the Service resides in the namespace
     private static final String packageName = "ch.ethz.inf.vs.a4.wdmf_api";
     private static final String serviceName = "ch.ethz.inf.vs.a4.wdmf_api.MainService";
+    // Used preference key (Putting them in the string resources xml doesn't really work)
+    static final String networkNamePK = "PK network name";
+    static final String timeoutPK = "PK timeout";
+    static final String bufferSizePK = "PK buffer size";
 
     // ABSTRACT PART ( MUST OVERWRITE )
 
@@ -104,7 +119,10 @@ public abstract class WDMF_Connector extends Service {
         byte[] dataCopy = Arrays.copyOfRange(data, 0, data.length);
 
         // Create and send a message to the service
-        Message msg = Message.obtain(null, IPC_MSG_SEND_SINGLE_MESSAGE, appID, 0, dataCopy);
+        Message msg = Message.obtain(null, IPC_MSG_SEND_SINGLE_MESSAGE, appID, 0);
+        Bundle b = new Bundle();
+        b.putByteArray("data", dataCopy);
+        msg.setData(b);
 
         try {
             sendingMessenger.send(msg);
@@ -116,7 +134,17 @@ public abstract class WDMF_Connector extends Service {
     }
 
     public String getNetworkTag(){
-        // TODO: Implement
+        // Create and send a request to the service
+        Message msg = Message.obtain(null, IPC_MSG_GET_TAG);
+        msg.replyTo = receivingMessenger;
+
+        try {
+            sendingMessenger.send(msg);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+
+        // TODO: Wait for answer and return (blocking in here?)
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
@@ -126,8 +154,21 @@ public abstract class WDMF_Connector extends Service {
     }
 
     public long get_buffer_size(){
-        // TODO: Implement
-        throw new UnsupportedOperationException("Not implemented yet");
+        // TODO: W/SharedPreferencesImpl:
+        // Attempt to read preferences file
+        // /data/user/0/ch.ethz.inf.vs.a4.wdmf_api/shared_prefs/ch.ethz.inf.vs.a4.wdmf_api_preferences.xml
+        // without permission
+        try{
+            Context theirContext = surroundingContext.createPackageContext(packageName, Context.CONTEXT_IGNORE_SECURITY);
+            SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(theirContext);
+            String lbufferSize = pref.getString(bufferSizePK, "-1");
+            return Long.valueOf(lbufferSize);
+        }catch (Exception e){
+            e.printStackTrace();
+            return -2;
+        }
+
+//        throw new UnsupportedOperationException("Not implemented yet");
     }
 
     public void set_buffer_size(long buffersize){
@@ -163,6 +204,7 @@ public abstract class WDMF_Connector extends Service {
 
             // Register to listen to messages with our appID
             Message msg = Message.obtain(null, IPC_MSG_LISTEN, appID, 0);
+            msg.replyTo = receivingMessenger;
             try {
                 sendingMessenger.send(msg);
             } catch (RemoteException e) {
@@ -191,8 +233,10 @@ public abstract class WDMF_Connector extends Service {
             }
             switch (msg.what) {
                 case WDMF_Connector.IPC_MSG_RECV_SINGLE_MESSAGE:
-                    if( (msg.obj instanceof byte[])) {
-                        onReceiveMessage((byte[])msg.obj);
+                    Bundle bnd = msg.getData();
+                    byte[] data = bnd.getByteArray("data");
+                    if( data != null) {
+                        onReceiveMessage(data);
                     }
                     else {
                         Log.d("WDMF Connector", "Error: we got a messenger message of type IPC_MSG_RECV_SINGLE_MESSAGE but no valid application message was contained.");
