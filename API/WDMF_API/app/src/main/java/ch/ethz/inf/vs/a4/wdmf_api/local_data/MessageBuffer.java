@@ -108,6 +108,15 @@ final public class MessageBuffer {
         }
     }
 
+    public boolean hasMessagesForReceiver(String receiver, AckTable ackTable) {
+        for(EnumeratedMessage em : buffer) {
+            //TODO: clarify whether it should be < or <= (Do we expect the seq_nr as next message or is it the last number that we received
+            if(ackTable.get(em.sender, receiver) <  seq_nr){
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 //default visibility -> visible in package only

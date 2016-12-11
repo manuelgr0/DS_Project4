@@ -1,4 +1,4 @@
-package ch.ethz.inf.vs.a4.wdmf_api.ipc_interface;
+package ch.ethz.inf.vs.a4.wdmf_api.ui;
 
 import android.content.res.Configuration;
 import android.os.Bundle;

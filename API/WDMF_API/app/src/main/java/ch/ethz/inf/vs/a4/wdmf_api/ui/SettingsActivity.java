@@ -17,7 +17,6 @@ import android.view.MenuItem;
 
 import java.util.List;
 
-import ch.ethz.inf.vs.a4.wdmf_api.ipc_interface.AppCompatPreferenceActivity;
 import ch.ethz.inf.vs.a4.wdmf_api.ipc_interface.WDMF_Connector;
 import ch.ethz.inf.vs.a4.wdmf_api.R;
 

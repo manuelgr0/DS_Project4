@@ -26,6 +26,10 @@ public class LCTable {
        return hash.containsKey(node);
     }
 
+    public boolean entryIsOlderThan(String node, long timestamp){
+        return hash.containsKey(node) && hash.get(node) < timestamp;
+    }
+
     public void delete (String node){
         hash.remove(node);
 
