@@ -5,6 +5,10 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
+import ch.ethz.inf.vs.a4.wdmf_api.io.Packet;
+import ch.ethz.inf.vs.a4.wdmf_api.network_protocol_data.AckTable;
+import ch.ethz.inf.vs.a4.wdmf_api.network_protocol_data.LCTable;
+
 import static org.junit.Assert.*;
 
 

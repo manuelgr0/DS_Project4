@@ -1,12 +1,11 @@
-package ch.ethz.inf.vs.a4.wdmf_api;
+package ch.ethz.inf.vs.a4.wdmf_api.local_data;
 
 
-import android.util.Log;
-
-import java.lang.reflect.Array;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import ch.ethz.inf.vs.a4.wdmf_api.network_protocol_data.AckTable;
 
 /**
  * Created by Jakob on 24.11.2016.
@@ -23,7 +22,7 @@ final public class MessageBuffer {
 
     // Provide the name in the network associated with the local node
     // and specify the max bytes that should be buffered
-    MessageBuffer(String ownerIdentifier, long bufferSize) {
+    public MessageBuffer(String ownerIdentifier, long bufferSize) {
         owner = ownerIdentifier;
         buffer = new ArrayList<EnumeratedMessage>();
         memory_space = bufferSize;

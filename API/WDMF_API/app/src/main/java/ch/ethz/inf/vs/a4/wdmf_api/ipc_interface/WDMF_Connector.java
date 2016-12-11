@@ -1,4 +1,4 @@
-package ch.ethz.inf.vs.a4.wdmf_api;
+package ch.ethz.inf.vs.a4.wdmf_api.ipc_interface;
 
 import android.app.Service;
 import android.content.ComponentName;
@@ -51,11 +51,11 @@ public abstract class WDMF_Connector extends Service {
     public static final int IPC_MSG_SET_BUFFER_SIZE_ACK = 11;
     // This is used to find where exactly the Service resides in the namespace
     private static final String packageName = "ch.ethz.inf.vs.a4.wdmf_api";
-    private static final String serviceName = "ch.ethz.inf.vs.a4.wdmf_api.MainService";
+    private static final String serviceName = "ch.ethz.inf.vs.a4.wdmf_api.service.MainService";
     // Used preference key (Putting them in the string resources xml doesn't really work)
-    static final String networkNamePK = "PK network name";
-    static final String timeoutPK = "PK timeout";
-    static final String bufferSizePK = "PK buffer size";
+    public static final String networkNamePK = "PK network name";
+    public static final String timeoutPK = "PK timeout";
+    public static final String bufferSizePK = "PK buffer size";
     // And for reading the content Provider
     static final String MyPrefsUri = "content://ch.ethz.inf.vs.a4.wdmf_api.provider/any";
     // ABSTRACT PART ( MUST OVERWRITE )

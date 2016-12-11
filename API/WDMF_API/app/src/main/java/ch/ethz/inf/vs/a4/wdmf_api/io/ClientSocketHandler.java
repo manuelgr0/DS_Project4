@@ -1,4 +1,4 @@
-package ch.ethz.inf.vs.a4.wdmf_api;
+package ch.ethz.inf.vs.a4.wdmf_api.io;
 
 import android.os.Handler;
 import android.util.Log;
@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+
+import ch.ethz.inf.vs.a4.wdmf_api.ui.MainActivity;
 
 /**
  * Created by manue on 24.11.2016.

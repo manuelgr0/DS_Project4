@@ -9,6 +9,8 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
+import ch.ethz.inf.vs.a4.wdmf_api.io.Packet;
+
 import static org.junit.Assert.*;
 
 public class ParserUnitTest {

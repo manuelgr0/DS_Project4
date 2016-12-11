@@ -2,6 +2,8 @@ package ch.ethz.inf.vs.a4.wdmf_api;
 
 import org.junit.Test;
 
+import ch.ethz.inf.vs.a4.wdmf_api.network_protocol_data.AckTable;
+
 public class AckTableTest {
 
     @Test

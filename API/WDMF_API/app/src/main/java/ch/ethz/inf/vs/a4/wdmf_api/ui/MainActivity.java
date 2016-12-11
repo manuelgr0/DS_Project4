@@ -1,17 +1,15 @@
-package ch.ethz.inf.vs.a4.wdmf_api;
+package ch.ethz.inf.vs.a4.wdmf_api.ui;
 
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,10 +18,13 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+
+import ch.ethz.inf.vs.a4.wdmf_api.ipc_interface.WDMF_Connector;
+import ch.ethz.inf.vs.a4.wdmf_api.R;
+import ch.ethz.inf.vs.a4.wdmf_api.io.WiFiDirectBroadcastReceiver;
 
 public class MainActivity extends AppCompatActivity implements WifiP2pManager.ConnectionInfoListener/*, MessageTarget*/ {
 
@@ -33,7 +34,7 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
     IntentFilter mIntentFilter;
         private ArrayList<WifiP2pDevice> peers_list;
 
-    static final int SERVER_PORT = 4545;
+    public static final int SERVER_PORT = 4545;
     public static final int MESSAGE_READ = 0x400 + 1;
     public static final int MY_HANDLE = 0x400 + 2;
     private final WDMF_Connector connector = new WDMF_Connector(this, "Test App from Manu and Köbi") {
@@ -252,13 +253,13 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
         return this.peers_list;
     }
 
-    void setPeersList(ArrayList<WifiP2pDevice> a) {
+    public void setPeersList(ArrayList<WifiP2pDevice> a) {
         this.peers_list = a;
     }
 
     void startWDMFAPI(){
         Intent i = new Intent();
-        i.setComponent(new ComponentName("ch.ethz.inf.vs.a4.wdmf_api", "ch.ethz.inf.vs.a4.wdmf_api.MainService"));
+        i.setComponent(new ComponentName("ch.ethz.inf.vs.a4.wdmf_api", "ch.ethz.inf.vs.a4.wdmf_api.service.MainService"));
 
         //read preferences before starting the service /*this should happen in the service*/
        /* SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
@@ -279,7 +280,7 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
 
     void stopWDMFAPI(){
         Intent i = new Intent();
-        i.setComponent(new ComponentName("ch.ethz.inf.vs.a4.wdmf_api", "ch.ethz.inf.vs.a4.wdmf_api.MainService"));
+        i.setComponent(new ComponentName("ch.ethz.inf.vs.a4.wdmf_api", "ch.ethz.inf.vs.a4.wdmf_api.service.MainService"));
         stopService(i);
     }
 

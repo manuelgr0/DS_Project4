@@ -1,4 +1,4 @@
-package ch.ethz.inf.vs.a4.wdmf_api;
+package ch.ethz.inf.vs.a4.wdmf_api.io;
 
 import android.os.Handler;
 import android.util.Log;

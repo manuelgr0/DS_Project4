@@ -1,4 +1,4 @@
-package ch.ethz.inf.vs.a4.wdmf_api;
+package ch.ethz.inf.vs.a4.wdmf_api.network_protocol_data;
 
 
 import java.util.Date;

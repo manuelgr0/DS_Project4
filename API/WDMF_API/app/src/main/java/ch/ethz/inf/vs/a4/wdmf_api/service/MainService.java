@@ -1,14 +1,8 @@
-package ch.ethz.inf.vs.a4.wdmf_api;
+package ch.ethz.inf.vs.a4.wdmf_api.service;
 
 import android.app.Service;
-import android.content.ContentProvider;
-import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.MatrixCursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -16,11 +10,14 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.util.SparseArray;
 
 import java.util.ArrayList;
+
+import ch.ethz.inf.vs.a4.wdmf_api.ipc_interface.WDMF_Connector;
+import ch.ethz.inf.vs.a4.wdmf_api.R;
+import ch.ethz.inf.vs.a4.wdmf_api.local_data.MessageBuffer;
 
 public class MainService extends Service {
     private MessageBuffer buffer;

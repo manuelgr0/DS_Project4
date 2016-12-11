@@ -9,6 +9,9 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import ch.ethz.inf.vs.a4.wdmf_api.local_data.MessageBuffer;
+import ch.ethz.inf.vs.a4.wdmf_api.network_protocol_data.AckTable;
+
 import static org.junit.Assert.*;
 
 

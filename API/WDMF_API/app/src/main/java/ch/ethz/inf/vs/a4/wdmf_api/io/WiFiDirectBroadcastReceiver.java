@@ -1,4 +1,4 @@
-package ch.ethz.inf.vs.a4.wdmf_api;
+package ch.ethz.inf.vs.a4.wdmf_api.io;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -11,6 +11,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+
+import ch.ethz.inf.vs.a4.wdmf_api.R;
+import ch.ethz.inf.vs.a4.wdmf_api.ui.MainActivity;
 
 
 public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
