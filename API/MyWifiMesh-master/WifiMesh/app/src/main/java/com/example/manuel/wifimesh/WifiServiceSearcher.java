@@ -189,7 +189,7 @@ public class WifiServiceSearcher  implements WifiP2pManager.ChannelListener{
                             public void onFailure(int reason) {Log.d(TAG, "Starting service discovery failed, error code " + reason);}
                         });
                     }
-                }, 1000);
+                }, 1500);
             }
 
             public void onFailure(int reason) {

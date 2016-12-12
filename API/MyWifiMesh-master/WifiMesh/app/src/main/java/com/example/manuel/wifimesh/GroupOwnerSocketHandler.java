@@ -24,6 +24,7 @@ public class GroupOwnerSocketHandler extends Thread {
     private Handler handler;
     private static final String TAG = "GroupOwnerSocketHandler";
     private ChatManager chat;
+    private Socket s;
 
     public GroupOwnerSocketHandler(Handler handler, int port,Context context) throws IOException {
         try {
@@ -56,7 +57,7 @@ public class GroupOwnerSocketHandler extends Thread {
             try {
                 // A blocking operation. Initiate a ChatManager instance when
                 // there is a new connection
-                Socket  s = socket.accept();
+                s = socket.accept();
                 Log.d(TAG, "Launching the Group I/O handler");
                 chat = new ChatManager(s, handler, "Group");
                 new Thread(chat).start();
@@ -83,10 +84,16 @@ public class GroupOwnerSocketHandler extends Thread {
         }
     }
 
-
+    public void close_socket() throws IOException {
+        if(s != null) {
+            s.close();
+        }
+    }
 
     public ChatManager getChat() {
         return chat;
     }
+
+    public Socket getSocket() {return s;}
 
 }

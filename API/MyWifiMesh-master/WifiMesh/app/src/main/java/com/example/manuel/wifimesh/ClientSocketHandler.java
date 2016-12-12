@@ -23,6 +23,8 @@ public class ClientSocketHandler extends Thread {
     private ChatManager chat;
     private String mAddress;
     private int mPort;
+    private Socket socket;
+    private boolean socket_connected;
 
     public ClientSocketHandler(Handler handler, String groupOwnerAddress, int port,Context context) {
         this.broadcaster = LocalBroadcastManager.getInstance(context);
@@ -33,13 +35,14 @@ public class ClientSocketHandler extends Thread {
 
     @Override
     public void run() {
-        Socket socket = new Socket();
+        socket = new Socket();
         try {
             socket.bind(null);
-            socket.connect(new InetSocketAddress(mAddress,mPort), 5000);
+            socket.connect(new InetSocketAddress(mAddress,mPort));
             Log.d(TAG, "Launching the I/O handler");
             chat = new ChatManager(socket, handler, "Client");
             new Thread(chat).start();
+            socket_connected = true;
         } catch (Exception e) {
             if(broadcaster != null) {
                 Intent intent = new Intent(DSS_CLIENT_VALUES);
@@ -59,10 +62,17 @@ public class ClientSocketHandler extends Thread {
         }
     }
 
-
+    public void close_socket() throws IOException {
+        if(socket != null && socket_connected) {
+            socket.close();
+            socket_connected = false;
+        }
+    }
 
     public ChatManager getChat() {
         return chat;
     }
+
+    public Socket getSocket() {return socket;}
 
 }

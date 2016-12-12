@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
@@ -36,11 +37,13 @@ public class MainActivity extends AppCompatActivity {
     Boolean serviceRunning = false;
 
     //change me  to be dynamic!!
-    public String CLIENT_PORT_INSTANCE = "38765";
-    public String SERVICE_PORT_INSTANCE = "38765";
+    public String CLIENT_PORT_INSTANCE = "38000";
+    public String SERVICE_PORT_INSTANCE = "38000";
 
     public static final int MESSAGE_READ = 0x400 + 1;
     public static final int MY_HANDLE = 0x400 + 2;
+
+    String[] separated;
 
     GroupOwnerSocketHandler  groupSocket = null;
     ClientSocketHandler clientSocket = null;
@@ -105,8 +108,6 @@ public class MainActivity extends AppCompatActivity {
                     mWifiAccessPoint = new WifiAccessPoint(that);
                     mWifiAccessPoint.Start();
 
-                    mWifiServiceSearcher = new WifiServiceSearcher(that);
-                    mWifiServiceSearcher.Start();
                 }
             }
         });
@@ -115,22 +116,116 @@ public class MainActivity extends AppCompatActivity {
         button2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                chat = new ChatManager(new Socket(), myHandler, "Client!!!!");
-                new Thread(chat).start();
-                /*Log.d("MainActivity ", "send clicked");
-                try {
-                    Log.d("hi", "test1");
-                    Socket socket = groupSocket.socket.accept();
+                if(serviceRunning) {
+                    serviceRunning = false;
+                    if(mWifiAccessPoint != null){
+                        mWifiAccessPoint.Stop();
+                        mWifiAccessPoint = null;
+                    }
 
-                    Log.d("hi", "test2");
-                    chat = new ChatManager(socket, myHandler, "Group!!!!");
+                    if(mWifiServiceSearcher != null){
+                        mWifiServiceSearcher.Stop();
+                        mWifiServiceSearcher = null;
+                    }
 
-                    Log.d("hi", "test3");
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    if(mWifiConnection != null) {
+                        mWifiConnection.Stop();
+                        mWifiConnection = null;
+                    }
+                    Log.d("","Stopped");
+                }else{
+                    serviceRunning = true;
+                    Log.d("","Started");
+
+                    mWifiServiceSearcher = new WifiServiceSearcher(that);
+                    mWifiServiceSearcher.Start();
                 }
-                Log.d("MainActivity ", "send clicked -> about to start thread");
-                new Thread(chat).start();*/
+            }
+        });
+
+        Button button3 = (Button) findViewById(R.id.button3);
+        button3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mWifiConnection == null) {
+                    if(mWifiAccessPoint != null){
+                        mWifiAccessPoint.Stop();
+                        mWifiAccessPoint = null;
+                    }
+                    if(mWifiServiceSearcher != null){
+                        mWifiServiceSearcher.Stop();
+                        mWifiServiceSearcher = null;
+                    }
+
+                    final String networkSSID = separated[1];
+                    final String networkPass = separated[2];
+                    final String ipAddress   = separated[3];
+
+                    Log.d("Connection ", "Try to connect.............");
+                    mWifiConnection = new WifiConnection(that,networkSSID,networkPass);
+                    mWifiConnection.SetInetAddress(ipAddress);
+                }
+            }
+        });
+
+        Button button4 = (Button) findViewById(R.id.button4);
+        button4.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+                String ip = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
+                Log.d("Sender ip is:", ip);
+                if(mWifiConnection.GetInetAddress() == ip){
+                    chat = new ChatManager(groupSocket.getSocket(), myHandler, "Group!!!!!");
+                    new Thread(chat).start();
+                } else {
+                    chat = new ChatManager(clientSocket.getSocket(), myHandler, "Client!!!!");
+                    new Thread(chat).start();
+                }
+                /*if(clientSocket != null && clientSocket.getSocket() != null) {
+                    chat = new ChatManager(clientSocket.getSocket(), myHandler, "Client!!!!");
+                    new Thread(chat).start();
+                }
+                if(groupSocket != null && groupSocket.getSocket() != null) {
+                    chat = new ChatManager(groupSocket.getSocket(), myHandler, "Group!!!!!");
+                    new Thread(chat).start();
+                }
+                mWifiConnection.*/
+            }
+        });
+
+
+        Button button5 = (Button) findViewById(R.id.button5);
+        button5.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mWifiConnection != null) {
+                    mWifiConnection.Stop();
+                }
+                if(mWifiAccessPoint != null){
+                    mWifiAccessPoint.Stop();
+                }
+
+                if(mWifiServiceSearcher != null){
+                    mWifiServiceSearcher.Stop();
+                }
+                if(clientSocket != null) {
+                    try {
+                        clientSocket.close_socket();
+                        Log.d("Closing", "ClientSocket closed");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if(groupSocket != null) {
+                    try {
+                        groupSocket.close_socket();
+                        Log.d("Closing", "ServerSocket closed");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                Log.d("Closing", "  COMPLETE!!");
             }
         });
 
@@ -151,7 +246,7 @@ public class MainActivity extends AppCompatActivity {
         LocalBroadcastManager.getInstance(this).registerReceiver((mBRReceiver), filter);
 
         try{
-            groupSocket = new GroupOwnerSocketHandler(myHandler,Integer.parseInt(SERVICE_PORT_INSTANCE),this);
+            groupSocket = new GroupOwnerSocketHandler(myHandler,Integer.parseInt(SERVICE_PORT_INSTANCE),that);
             groupSocket.start();
             Log.d("","Group socketserver started.");
         }catch (Exception e){
@@ -204,30 +299,11 @@ public class MainActivity extends AppCompatActivity {
             }else if (WifiServiceSearcher.DSS_WIFISS_PEERAPINFO.equals(action)) {
                 String s = intent.getStringExtra(WifiServiceSearcher.DSS_WIFISS_INFOTEXT);
 
-                String[] separated = s.split(":");
+                separated = s.split(":");
                 Log.d("SS", "found SSID:" + separated[1] + ", pwd:"  + separated[2]+ "IP: " + separated[3]);
                 ((TextView) findViewById(R.id.textView2)).setText("found SSID:" + separated[1] + ", pwd:"  + separated[2]);
                 SSID = separated[1];
 
-
-                if(mWifiConnection == null) {
-                    if(mWifiAccessPoint != null){
-                        mWifiAccessPoint.Stop();
-                        mWifiAccessPoint = null;
-                    }
-                    if(mWifiServiceSearcher != null){
-                        mWifiServiceSearcher.Stop();
-                        mWifiServiceSearcher = null;
-                    }
-
-                    final String networkSSID = separated[1];
-                    final String networkPass = separated[2];
-                    final String ipAddress   = separated[3];
-
-                    mWifiConnection = new WifiConnection(that,networkSSID,networkPass);
-                    mWifiConnection.SetInetAddress(ipAddress);
-                    Log.d("", "found accesspoint");
-                }
             }else if (WifiConnection.DSS_WIFICON_VALUES.equals(action)) {
                 String s = intent.getStringExtra(WifiConnection.DSS_WIFICON_MESSAGE);
                 Log.d("CON", s);
