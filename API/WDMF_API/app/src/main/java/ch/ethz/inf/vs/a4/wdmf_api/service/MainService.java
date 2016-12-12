@@ -26,6 +26,8 @@ public class MainService extends Service {
     AckTable ackTable;
     NeighbourList neighbourhood;
 
+    volatile private boolean dataChanged = false;
+
     // Target we publish for clients to send messages to IncomingHandler
     private final Messenger receivingMessenger = new Messenger(new IncomingHandler(this));
     // To send the messages back according to the AppID
@@ -37,7 +39,7 @@ public class MainService extends Service {
     long maxNoContactTimeForeignDevices = 60000; //1 min TODO? Add to preferences?
     String networkName = "MyNetworkName";
     long maxBufferSize = 1000000;
-    int timeout = 30*60;
+    private volatile int timeout = 30*60; // TODO: use
     boolean prefsLocked = false; //TODO add to prefs
 
     @Override
@@ -50,12 +52,14 @@ public class MainService extends Service {
         ackTable = new AckTable(myName);
         neighbourhood = new NeighbourList();
 
-        //starting main loop in a separate thread
-        new Thread(new Runnable() {
+        //creating main loop thread
+        Thread mainLoop = new Thread() {
             public void run() {
                 main();
             }
-        }).start();
+        };
+        // start separate thread for the main loop
+        mainLoop.start();
 
         return START_STICKY;
     }
@@ -72,21 +76,24 @@ public class MainService extends Service {
 
             // Go through visible devices to contact them if necessary
             for (String neighbour : deviceIdentifier){
-                // Check if the node is in the network
-                if(lcTable.hasKey(neighbour)){
-                    // See if we have new data for the node, according to our ACK table,
-                    // or otherwise check when we've had contact with him last time
-                    if(buffer.hasMessagesForReceiver(neighbour, ackTable)
-                     || lcTable.entryIsOlderThan(neighbour, (new Date()).getTime() - maxNoContactTime)) {
-                        establishConnection(neighbour);
-                    }
-                } else {
-                    Date lastTry = neighbourhood.last_contact(neighbour);
-                    Date threshold = new Date(System.currentTimeMillis() - maxNoContactTimeForeignDevices);
-                    // Contact node if we haven't done so already recently
-                    if (lastTry != null && lastTry.after( threshold )){
-                        establishConnection(neighbour);
-                        neighbourhood.update_neighbour(neighbour);
+                // lock buffer because IPC messages will be handled by another thread
+                synchronized (buffer) {
+                    // Check if the node is in the network
+                    if (lcTable.hasKey(neighbour)) {
+                        // See if we have new data for the node, according to our ACK table,
+                        // or otherwise check when we've had contact with him last time
+                        if (buffer.hasMessagesForReceiver(neighbour, ackTable)
+                                || lcTable.entryIsOlderThan(neighbour, (new Date()).getTime() - maxNoContactTime)) {
+                            establishConnection(neighbour);
+                        }
+                    } else {
+                        Date lastTry = neighbourhood.last_contact(neighbour);
+                        Date threshold = new Date(System.currentTimeMillis() - maxNoContactTimeForeignDevices);
+                        // Contact node if we haven't done so already recently
+                        if (lastTry != null && lastTry.after(threshold)) {
+                            establishConnection(neighbour);
+                            neighbourhood.update_neighbour(neighbour);
+                        }
                     }
                 }
             }
@@ -95,7 +102,13 @@ public class MainService extends Service {
             long executionTime = new Date().getTime() - start;
             Log.d("Main Loop", "Execution time for one iteration: " + executionTime + "ms");
             try{
-                Thread.sleep(sleepTime - executionTime);
+                synchronized (buffer) {
+                    // Spin in case we are nwoken up for wrong reasons
+                    while(!dataChanged && (new Date()).getTime() < start + sleepTime){
+                        buffer.wait(sleepTime - executionTime);
+                    }
+                    dataChanged = false;
+                }
             } catch (InterruptedException e){
                 e.printStackTrace();
                 break; // TODO: can we be interrupted by a friendly thread when we have new messages to send?
@@ -119,27 +132,28 @@ public class MainService extends Service {
         // Apply preferences
         updateBufferSize(Long.valueOf(lbufferSize));
         updateNetworkName(lnetworkName);
-        updateTimeout(timeout = Integer.valueOf(ltimeout));
+        updateTimeout(Integer.valueOf(ltimeout));
     }
-// TODO: Listen to IPC changes to preferences and call these functions
-    private void updateBufferSize(long newSize){
+
+    public void updateBufferSize(long newSize){
         Log.d("MainService", "New buffer size is applied: " + newSize + "KB old size was " + maxBufferSize + "KB.");
-        if (buffer != null){
-            long diff = maxBufferSize - newSize;
-            if(diff < 0){
-                buffer.decreaseBufferSize((int)-diff);
-            } else if (diff > 0){
-                buffer.increaseBufferSize(diff);
+        if (buffer != null) {
+            synchronized (buffer) {
+                long diff = maxBufferSize - newSize;
+                if (diff < 0) {
+                    buffer.decreaseBufferSize((int) -diff);
+                } else if (diff > 0) {
+                    buffer.increaseBufferSize(diff);
+                }
             }
         }
         maxBufferSize = newSize;
     }
-    private void updateNetworkName(String newName){
-        // TODO?
+    public void updateNetworkName(String newName){
+        // TODO? Probably clear all local data and also network protocol data, right?
         networkName = newName;
     }
-    private void updateTimeout(int newTimeout){
-        // TODO?
+    public void updateTimeout(int newTimeout){
         timeout = newTimeout;
     }
     /**
@@ -152,7 +166,11 @@ public class MainService extends Service {
     }
 
     void localDataChanged(){
-        // TODO: interrupt sleeping main loop
+        dataChanged = true;
+        // notify mainLoop thread
+        synchronized (buffer) {
+            buffer.notify();
+        }
     }
 
 }

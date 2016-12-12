@@ -9,6 +9,7 @@ import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import ch.ethz.inf.vs.a4.wdmf_api.ipc_interface.WDMF_Connector;
@@ -39,7 +40,9 @@ class IncomingHandler extends Handler {
                     // HACK: Wait for onCreate to finish
                     while(mainService.buffer == null);
 
-                    mainService.buffer.addLocalMessage(data, msg.arg1);
+                    synchronized (mainService.buffer){
+                        mainService.buffer.addLocalMessage(data, msg.arg1);
+                    }
                     mainService.localDataChanged();
                 }
                 else {
@@ -48,9 +51,10 @@ class IncomingHandler extends Handler {
                 break;
 
             case WDMF_Connector.IPC_MSG_SEND_MESSAGE_LIST:
-                // TODO
-                if( (msg.obj instanceof ArrayList<?>)) {
-                    ArrayList<byte[]> list = (ArrayList<byte[]>)msg.obj;
+                bnd = msg.getData();
+                Serializable obj = bnd.getSerializable("dataList");
+                if( (obj instanceof ArrayList<?>)) {
+                    ArrayList<byte[]> list = (ArrayList<byte[]>)obj;
                     if(!list.isEmpty() && list.get(0) instanceof byte[]){
                         for(byte[] appMsg : list){
                             mainService.buffer.addLocalMessage(appMsg, msg.arg1);
@@ -60,7 +64,6 @@ class IncomingHandler extends Handler {
                     else {
                         Log.d("Incoming Handler", "Error: we got a command to send out a list of messages but the list was corrupted.");
                     }
-
                 }
                 else {
                     Log.d("Incoming Handler", "Error: we got a command to send out a list of messages but no list was provided.");
@@ -87,6 +90,7 @@ class IncomingHandler extends Handler {
                         SharedPreferences.Editor editor = pref.edit();
                         editor.putString(WDMF_Connector.networkNamePK, (String) msg.obj);
                         success = editor.commit();
+                        mainService.updateNetworkName(nt);
                     } else {
                         Log.d("Incoming Handler", "Got a command to set network tag but no argument was provided.");
                     }
@@ -104,6 +108,7 @@ class IncomingHandler extends Handler {
                         SharedPreferences.Editor editor = pref.edit();
                         editor.putString(WDMF_Connector.bufferSizePK, String.valueOf(bs));
                         success = editor.commit();
+                        mainService.updateBufferSize(bs);
                     } else {
                         Log.d("Incoming Handler", "Got a command to set the buffer size but no argument was provided.");
                     }
@@ -118,6 +123,7 @@ class IncomingHandler extends Handler {
                         SharedPreferences.Editor editor = pref.edit();
                         editor.putString(WDMF_Connector.timeoutPK, String.valueOf(msg.arg1));
                         success = editor.commit();
+                        mainService.updateTimeout(msg.arg1);
                     } else {
                         Log.d("Incoming Handler", "Got a command to set the timeout but no valid argument was provided.");
                     }

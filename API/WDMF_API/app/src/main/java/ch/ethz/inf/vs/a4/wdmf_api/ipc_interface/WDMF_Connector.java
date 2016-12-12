@@ -15,8 +15,10 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by Jakob on 25.11.2016.
@@ -109,20 +111,44 @@ public abstract class WDMF_Connector extends Service {
     }
 
     // Returns false in case something went wrong
+    // It is in the users responsibility to send the message again if it didn't succeed
     public boolean broadcastMessage(byte[] data) {
         if (!bound) {
-            Log.d("WDMF_Connector", "Error: The WDMF is not bound but a message wants to be broadcasted.");
-            // TODO: retry
+            Log.d("WDMF_Connector", "Error: The WDMF is not bound but a message wants to be broadcast.");
             return false;
         }
         Log.d("WDMF_Connector", "broadcast message.");
-        // Copy data
-        byte[] dataCopy = Arrays.copyOfRange(data, 0, data.length);
+        // Copy data // unnecessary since it will be serialized anyway
+        //byte[] dataCopy = Arrays.copyOfRange(data, 0, data.length);
 
         // Create and send a message to the service
         Message msg = Message.obtain(null, IPC_MSG_SEND_SINGLE_MESSAGE, appID, 0);
         Bundle b = new Bundle();
-        b.putByteArray("data", dataCopy);
+        b.putByteArray("data", data);
+        msg.setData(b);
+
+        try {
+            sendingMessenger.send(msg);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    // Returns false in case something went wrong
+    // It is in the users responsibility to send the messages again if it didn't succeed
+    public boolean broadcastMessages(ArrayList<byte[]> data) {
+        if (!bound) {
+            Log.d("WDMF_Connector", "Error: The WDMF is not bound but messages want to be broadcast.");
+            return false;
+        }
+        Log.d("WDMF_Connector", "broadcast message list.");
+
+        // Create and send a message to the service
+        Message msg = Message.obtain(null, IPC_MSG_SEND_SINGLE_MESSAGE, appID, 0);
+        Bundle b = new Bundle();
+        b.putSerializable("dataList", data);
         msg.setData(b);
 
         try {
@@ -293,16 +319,15 @@ public abstract class WDMF_Connector extends Service {
                     }
                     break;
                 case WDMF_Connector.IPC_MSG_RECV_MESSAGE_LIST:
-                    // type check ArraList
-                    if( (msg.obj instanceof ArrayList<?>)) {
-                        ArrayList<byte[]> list = (ArrayList<byte[]>)msg.obj;
+                    bnd = msg.getData();
+                    Serializable obj = bnd.getSerializable("dataList");
+                    if( (obj instanceof ArrayList<?>)) {
+                        ArrayList<byte[]> list = (ArrayList<byte[]>)obj;
                         // type check inner type of ArrayList
                         if(!list.isEmpty() && list.get(0) instanceof byte[]){
-
                             // send data to application
-
                             try {
-                                // hand over as list if implmented by client
+                                // hand over as list if implemented by client
                                 onReceiveMessageList(list);
                             }
                             catch (UnsupportedOperationException e) {
@@ -311,7 +336,6 @@ public abstract class WDMF_Connector extends Service {
                                     onReceiveMessage(appMsg);
                                 }
                             }
-
                         }
                         else {
                             Log.d("WDMF Connector", "Error: we got a messenger message of type IPC_MSG_RECV_MESSAGE_LIST but the list was corrupted.");

@@ -96,14 +96,12 @@ final public class MessageBuffer {
     private void makeSpace(int bytes){
         // Remove buffer until we have enough space
         while(bytes > memory_space && !buffer.isEmpty()){
-
             // TODO: change replacement policy here
             // Remove oldest
-            bytes -= buffer.get(0).size();
             memory_space += buffer.get(0).size();
             buffer.remove(0);
         }
-        if (bytes > 0) {
+        if (memory_space < bytes) {
             throw new OutOfMemoryError();
         }
     }
