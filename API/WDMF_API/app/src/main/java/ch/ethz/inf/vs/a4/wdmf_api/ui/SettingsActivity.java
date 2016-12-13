@@ -19,6 +19,7 @@ import java.util.List;
 
 import ch.ethz.inf.vs.a4.wdmf_api.ipc_interface.WDMF_Connector;
 import ch.ethz.inf.vs.a4.wdmf_api.R;
+import ch.ethz.inf.vs.a4.wdmf_api.service.MainService;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -44,7 +45,12 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             if(preference.getKey().equals(WDMF_Connector.bufferSizePK)){
                 try {
                     int s = Integer.parseInt(stringValue);
+                    if (s < 1) {
+                        Log.d("Settings Activity", "Preference buffer size was invalid (" + s + ").");
+                        return false;
+                    }
                     preference.setSummary(s + "KB");
+
                 } catch (Throwable t) {
                     Log.d("Settings Activity", "Preference value for buffer size was no parsable to an integer.", t);
                     return false;
@@ -55,6 +61,22 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                     preference.setSummary(s + "min");
                 } catch (Throwable t) {
                     Log.d("Settings Activity", "Preference value for timeout was no parsable to an integer.", t);
+                    return false;
+                }
+            }else  if(
+                    preference.getKey().equals(WDMF_Connector.maxNoContactTimeForeignDevicesPK)
+                    || preference.getKey().equals(WDMF_Connector.maxNoContactTimePK)
+                    || preference.getKey().equals(WDMF_Connector.sleepTimePK)
+                    ){
+                try {
+                    int s = Integer.parseInt(stringValue);
+                    if (s  > 999  || s < 1) {
+                        Log.d("Settings Activity", "Preference value for time was invalid (" + s + ").");
+                        return false;
+                    }
+                    preference.setSummary(s + "s");
+                } catch (Throwable t) {
+                    Log.d("Settings Activity", "Preference value for time was no parsable to an integer. (" + stringValue + ").", t);
                     return false;
                 }
             }
@@ -76,6 +98,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 // simple string representation.
                 preference.setSummary(stringValue);
             }
+            //TODO: Call MainService.updateFromPreferences
             return true;
         }
     };
@@ -104,10 +127,19 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
         // Trigger the listener immediately with the preference's
         // current value.
-        sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
-                PreferenceManager
-                        .getDefaultSharedPreferences(preference.getContext())
-                        .getString(preference.getKey(), ""));
+        // Check for value (could be string or bool)
+        if(preference.getKey().equals(WDMF_Connector.lockPreferencesPK)){
+            sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
+                    PreferenceManager
+                            .getDefaultSharedPreferences(preference.getContext())
+                            .getBoolean(preference.getKey(), true));
+        }
+        else {
+            sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
+                    PreferenceManager
+                            .getDefaultSharedPreferences(preference.getContext())
+                            .getString(preference.getKey(), ""));
+        }
     }
 
     @Override
@@ -150,7 +182,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      */
     protected boolean isValidFragment(String fragmentName) {
         return PreferenceFragment.class.getName().equals(fragmentName)
-                || BasicPreferenceFragment.class.getName().equals(fragmentName);
+                || BasicPreferenceFragment.class.getName().equals(fragmentName)
+                || AdvancedPreferenceFragment.class.getName().equals(fragmentName);
     }
 
     /**
@@ -170,9 +203,35 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // to their values. When their values change, their summaries are
             // updated to reflect the new value, per the Android Design
             // guidelines.
-            bindPreferenceSummaryToValue(findPreference(WDMF_Connector.bufferSizePK));
             bindPreferenceSummaryToValue(findPreference(WDMF_Connector.networkNamePK));
             bindPreferenceSummaryToValue(findPreference(WDMF_Connector.timeoutPK));
+        }
+
+        @Override
+        public boolean onOptionsItemSelected(MenuItem item) {
+            int id = item.getItemId();
+            if (id == android.R.id.home) {
+                startActivity(new Intent(getActivity(), SettingsActivity.class));
+                return true;
+            }
+            return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    public static class AdvancedPreferenceFragment extends PreferenceFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+
+            addPreferencesFromResource(R.xml.pref_advanced);
+            setHasOptionsMenu(true);
+
+            bindPreferenceSummaryToValue(findPreference(WDMF_Connector.lockPreferencesPK));
+            bindPreferenceSummaryToValue(findPreference(WDMF_Connector.bufferSizePK));
+            bindPreferenceSummaryToValue(findPreference(WDMF_Connector.maxNoContactTimeForeignDevicesPK));
+            bindPreferenceSummaryToValue(findPreference(WDMF_Connector.maxNoContactTimePK));
+            bindPreferenceSummaryToValue(findPreference(WDMF_Connector.sleepTimePK));
         }
 
         @Override

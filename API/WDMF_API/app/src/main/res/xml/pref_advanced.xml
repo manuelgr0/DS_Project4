@@ -1,0 +1,42 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- NOTE: EditTextPreference accepts EditText attributes. -->
+    <!-- NOTE: EditTextPreference's summary should be set to its value by the activity code. -->
+    <CheckBoxPreference
+        android:key="PK lock prefs"
+        android:title="Lock preferences"
+        android:summary="Disallows apps to change the preferences automatically."
+        android:defaultValue="false" />
+
+    <EditTextPreference
+        android:defaultValue="@string/pref_default_buffer_size"
+        android:dialogTitle="@string/pref_dialog_title_buffer_size"
+        android:inputType="number"
+        android:key="PK buffer size"
+        android:title="@string/pref_title_buffer_size" />
+
+    <EditTextPreference
+        android:defaultValue="60"
+        android:inputType="number"
+        android:key="PK no contact t"
+        android:title="Max time to wait before contacting a known device again"
+        android:dialogTitle="Contact known devices at least once in ... seconds."
+        />
+
+    <EditTextPreference
+        android:defaultValue="90"
+        android:inputType="number"
+        android:key="PK foreign devices t"
+        android:title="Time between attempts to connect to unconnected devices"
+        android:dialogTitle="Contact unknown devices at least once in ... seconds."
+        />
+
+    <EditTextPreference
+        android:defaultValue="5"
+        android:inputType="number"
+        android:key="PK sleep t"
+        android:title="Discover frequency"
+        android:dialogTitle="Check all visible devices every ... seconds."
+        />
+
+</PreferenceScreen>

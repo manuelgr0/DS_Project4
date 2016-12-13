@@ -281,7 +281,7 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
     void stopWDMFAPI(){
         Intent i = new Intent();
         i.setComponent(new ComponentName("ch.ethz.inf.vs.a4.wdmf_api", "ch.ethz.inf.vs.a4.wdmf_api.service.MainService"));
-        stopService(i);
+        stopService(i); //TODO: make sure it really stops!
     }
 
 }

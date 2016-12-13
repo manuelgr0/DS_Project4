@@ -5,6 +5,7 @@
     <!-- Strings related to Settings -->
 
     <string name="pref_header_basic">Basic Settings</string>
+    <string name="pref_header_advanced">Advanced Settings</string>
 
     <string name="pref_title_network_name">Network name</string>
     <string name="pref_default_network_name">Public</string>
