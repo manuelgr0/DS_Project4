@@ -73,6 +73,9 @@ public class MainService extends Service {
                 Log.d("MainService", "There is nothing to stop right now.");
             }
         }
+        else if (intent.hasExtra("updatePrefs")){
+            updateFromPreferences();
+        }
         else {
             updateFromPreferences();
 
