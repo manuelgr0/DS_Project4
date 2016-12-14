@@ -7,4 +7,9 @@
         android:icon="@drawable/ic_menu_preferences_24dp"
         android:title="@string/pref_header_basic" />
 
+    <header
+        android:fragment="ch.ethz.inf.vs.a4.wdmf_api.ui.SettingsActivity$AdvancedPreferenceFragment"
+        android:icon="@drawable/ic_menu_preferences_24dp"
+        android:title="@string/pref_header_advanced" />
+
 </preference-headers>

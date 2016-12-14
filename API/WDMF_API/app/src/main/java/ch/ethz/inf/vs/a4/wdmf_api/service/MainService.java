@@ -34,13 +34,13 @@ public class MainService extends Service {
     SparseArray<Messenger> sendingMessengers = new SparseArray<>();
 
     // Configuration values
-    long sleepTime = 5000; //5s TODO? Add to preferences?
-    long maxNoContactTime = 60000; //1 min TODO? Add to preferences?
-    long maxNoContactTimeForeignDevices = 60000; //1 min TODO? Add to preferences?
+    long sleepTime = 5000; //5s
+    long maxNoContactTime = 60000; //1 min
+    long maxNoContactTimeForeignDevices = 60000; //1 min
     String networkName = "MyNetworkName";
     long maxBufferSize = 1000000;
     private volatile int timeout = 30*60; // TODO: use
-    boolean prefsLocked = false; //TODO add to prefs
+    boolean prefsLocked = false;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId){
@@ -111,7 +111,7 @@ public class MainService extends Service {
                 }
             } catch (InterruptedException e){
                 e.printStackTrace();
-                break; // TODO: can we be interrupted by a friendly thread when we have new messages to send?
+                break;
             }
         }
     }
@@ -121,18 +121,26 @@ public class MainService extends Service {
         // TODO :)
     }
 
-    private void updateFromPreferences(){
+    public void updateFromPreferences(){
 
         //Read preferences
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
         String lbufferSize = pref.getString(WDMF_Connector.bufferSizePK, (getResources().getString(R.string.pref_default_buffer_size)));
         String lnetworkName = pref.getString(WDMF_Connector.networkNamePK,(getResources().getString(R.string.pref_default_network_name)));
         String ltimeout = pref.getString(WDMF_Connector.timeoutPK, (getResources().getString(R.string.pref_default_timeout)));
+        String lsleepTime = pref.getString(WDMF_Connector.sleepTimePK, "5");
+        String lmaxNoContact = pref.getString(WDMF_Connector.maxNoContactTimePK, "60");
+        String lmncForeign = pref.getString(WDMF_Connector.maxNoContactTimeForeignDevicesPK, "60");
+
+        prefsLocked = pref.getBoolean(WDMF_Connector.lockPreferencesPK, true);
 
         // Apply preferences
         updateBufferSize(Long.valueOf(lbufferSize));
         updateNetworkName(lnetworkName);
         updateTimeout(Integer.valueOf(ltimeout));
+        sleepTime = Integer.valueOf(lsleepTime) * 1000;
+        maxNoContactTime = Integer.valueOf(lmaxNoContact) * 1000;
+        maxNoContactTimeForeignDevices = Integer.valueOf(lmncForeign) * 1000;
     }
 
     public void updateBufferSize(long newSize){
@@ -149,9 +157,19 @@ public class MainService extends Service {
         }
         maxBufferSize = newSize;
     }
+    // Changing the network name results in a change of the network and
+    // thus in a full reset of the local buffer.
     public void updateNetworkName(String newName){
-        // TODO? Probably clear all local data and also network protocol data, right?
-        networkName = newName;
+        if (!newName.equals(networkName)) {
+            networkName = newName;
+            if(buffer != null) {
+                synchronized (buffer) {
+                    buffer = new MessageBuffer(networkName, maxBufferSize);
+                    lcTable = new LCTable(networkName);
+                    ackTable = new AckTable(networkName);
+                }
+            }
+        }
     }
     public void updateTimeout(int newTimeout){
         timeout = newTimeout;

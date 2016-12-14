@@ -48,9 +48,10 @@ public abstract class WDMF_Connector extends Service {
     public static final int IPC_MSG_SET_TAG = 6;
     public static final int IPC_MSG_SET_TAG_ACK = 7;
     public static final int IPC_MSG_SET_TIMEOUT = 8;
-    public static final int IPC_MSG_SET_TIMEOUT_ACK = 9;
+    public static final int IPC_MSG_SET_TIMEOUT_ACK = 9; //TODO: listen
     public static final int IPC_MSG_SET_BUFFER_SIZE = 10;
-    public static final int IPC_MSG_SET_BUFFER_SIZE_ACK = 11;
+    public static final int IPC_MSG_SET_BUFFER_SIZE_ACK = 11; // TODO: listen
+    // TODO: other preferences?
     // This is used to find where exactly the Service resides in the namespace
     private static final String packageName = "ch.ethz.inf.vs.a4.wdmf_api";
     private static final String serviceName = "ch.ethz.inf.vs.a4.wdmf_api.service.MainService";
@@ -58,6 +59,10 @@ public abstract class WDMF_Connector extends Service {
     public static final String networkNamePK = "PK network name";
     public static final String timeoutPK = "PK timeout";
     public static final String bufferSizePK = "PK buffer size";
+    public static final String maxNoContactTimePK = "PK no contact t";
+    public static final String maxNoContactTimeForeignDevicesPK = "PK foreign devices t";
+    public static final String sleepTimePK = "PK sleep t";
+    public static final String lockPreferencesPK = "PK lock prefs";
     // And for reading the content Provider
     static final String MyPrefsUri = "content://ch.ethz.inf.vs.a4.wdmf_api.provider/any";
     // ABSTRACT PART ( MUST OVERWRITE )

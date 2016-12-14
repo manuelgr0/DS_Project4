@@ -14,14 +14,15 @@ import java.util.ArrayList;
 
 import ch.ethz.inf.vs.a4.wdmf_api.R;
 import ch.ethz.inf.vs.a4.wdmf_api.ui.MainActivity;
+import ch.ethz.inf.vs.a4.wdmf_api.ui.TestActivity;
 
 
 public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
     private WifiP2pManager mManager;
     private WifiP2pManager.Channel mChannel;
-    private MainActivity mActivity;
+    private TestActivity mActivity;
 
-    public WiFiDirectBroadcastReceiver(WifiP2pManager manager, WifiP2pManager.Channel channel, MainActivity activity) {
+    public WiFiDirectBroadcastReceiver(WifiP2pManager manager, WifiP2pManager.Channel channel, TestActivity activity) {
         super();
             this.mManager = manager;
             this.mChannel = channel;

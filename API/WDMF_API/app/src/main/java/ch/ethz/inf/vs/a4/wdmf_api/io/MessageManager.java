@@ -13,6 +13,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 
 import ch.ethz.inf.vs.a4.wdmf_api.ui.MainActivity;
+import ch.ethz.inf.vs.a4.wdmf_api.ui.TestActivity;
 
 /**
  * Handles reading and writing of messages with socket buffers. Uses a Handler
@@ -39,7 +40,7 @@ public class MessageManager implements Runnable {
             oStream = socket.getOutputStream();
             byte[] buffer = new byte[1024];
             int bytes;
-            handler.obtainMessage(MainActivity.MY_HANDLE, this)
+            handler.obtainMessage(TestActivity.MY_HANDLE, this)
                     .sendToTarget();
 
             while (true) {
@@ -52,7 +53,7 @@ public class MessageManager implements Runnable {
 
                     // Send the obtained bytes to the UI Activity
                     Log.d(TAG, "Rec:" + String.valueOf(buffer));
-                    handler.obtainMessage(MainActivity.MESSAGE_READ,
+                    handler.obtainMessage(TestActivity.MESSAGE_READ,
                             bytes, -1, buffer).sendToTarget();
                 } catch (IOException e) {
                     Log.e(TAG, "disconnected", e);

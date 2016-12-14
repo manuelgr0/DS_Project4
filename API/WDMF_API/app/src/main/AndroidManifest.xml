@@ -47,7 +47,9 @@
             android:name=".ipc_interface.PreferencesContentProvider"
             android:authorities="ch.ethz.inf.vs.a4.wdmf_api.provider"
             android:enabled="true"
-            android:exported="true"></provider>
+            android:exported="true" />
+
+        <activity android:name=".ui.TestActivity"></activity>
     </application>
 
 </manifest>
