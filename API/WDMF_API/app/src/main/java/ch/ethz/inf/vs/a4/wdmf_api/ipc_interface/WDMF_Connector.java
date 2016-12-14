@@ -48,9 +48,9 @@ public abstract class WDMF_Connector extends Service {
     public static final int IPC_MSG_SET_TAG = 6;
     public static final int IPC_MSG_SET_TAG_ACK = 7;
     public static final int IPC_MSG_SET_TIMEOUT = 8;
-    public static final int IPC_MSG_SET_TIMEOUT_ACK = 9; //TODO: listen
+    public static final int IPC_MSG_SET_TIMEOUT_ACK = 9;
     public static final int IPC_MSG_SET_BUFFER_SIZE = 10;
-    public static final int IPC_MSG_SET_BUFFER_SIZE_ACK = 11; // TODO: listen
+    public static final int IPC_MSG_SET_BUFFER_SIZE_ACK = 11;
     // TODO: other preferences?
     // This is used to find where exactly the Service resides in the namespace
     private static final String packageName = "ch.ethz.inf.vs.a4.wdmf_api";
@@ -73,7 +73,12 @@ public abstract class WDMF_Connector extends Service {
 
     // Overwrite this in client application if you want to treat a whole list of messages differently.
     // If this function is not overwritten, each message in the list will cause a onReceiveMessage invocation.
-    public void onReceiveMessageList(ArrayList<byte[]> list) { throw new UnsupportedOperationException("Not implemented"); };
+    public void onReceiveMessageList(ArrayList<byte[]> list) { throw new UnsupportedOperationException("Not implemented"); }
+
+    // Overwrite if you want to be notified about unsuccessful preference change attempts
+    // This usually happens when the user has locked the preferences
+    // The argument is the IPC_MSG_SET_****_ACK which was received as negative ACK
+    public void onPreferenceChangeRefused(int ipc_msg_ack) {}
 
     // IMPLEMENTATION
 
@@ -350,6 +355,12 @@ public abstract class WDMF_Connector extends Service {
                     else {
                         Log.d("WDMF Connector", "Error: we got a messenger message of type IPC_MSG_RECV_MESSAGE_LIST but no list of application messages was provided.");
                     }
+                    break;
+                case WDMF_Connector.IPC_MSG_SET_BUFFER_SIZE_ACK:
+                case WDMF_Connector.IPC_MSG_SET_TAG_ACK:
+                case WDMF_Connector.IPC_MSG_SET_TIMEOUT_ACK:
+                    if(msg.arg1 == 0)
+                    onPreferenceChangeRefused(msg.what);
                     break;
                 default:
                     super.handleMessage(msg);
