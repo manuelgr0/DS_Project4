@@ -17,11 +17,15 @@ import ch.ethz.inf.vs.a4.wdmf_api.ipc_interface.WDMF_Connector;
 /**
  * Handler of incoming messages from clients.
  */
-class IncomingHandler extends Handler {
+public class IncomingHandler extends Handler {
     private MainService mainService;
 
     public IncomingHandler(MainService mainService) {
         this.mainService = mainService;
+    }
+
+    public MainService getService(){
+        return mainService;
     }
 
     @Override
@@ -146,5 +150,8 @@ class IncomingHandler extends Handler {
                 }
             }
         }
+    }
+    public String toString(){
+        return super.toString() + "   -   My Incoming Handler" ;
     }
 }

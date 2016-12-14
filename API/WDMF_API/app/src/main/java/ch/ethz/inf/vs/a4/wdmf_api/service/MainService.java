@@ -3,6 +3,7 @@ package ch.ethz.inf.vs.a4.wdmf_api.service;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Binder;
 import android.os.IBinder;
 import android.os.Messenger;
 import android.preference.PreferenceManager;
@@ -20,6 +21,9 @@ import ch.ethz.inf.vs.a4.wdmf_api.local_data.NeighbourList;
 import ch.ethz.inf.vs.a4.wdmf_api.network_protocol_data.AckTable;
 import ch.ethz.inf.vs.a4.wdmf_api.network_protocol_data.LCTable;
 
+// TODO: reorder messages and buffer them
+// TODO: detect if other nodes think we got message already (msg has been dropped)
+
 public class MainService extends Service {
     MessageBuffer buffer;
     LCTable lcTable;
@@ -28,40 +32,78 @@ public class MainService extends Service {
 
     volatile private boolean dataChanged = false;
 
+    IncomingHandler handler = new IncomingHandler(this);
     // Target we publish for clients to send messages to IncomingHandler
-    private final Messenger receivingMessenger = new Messenger(new IncomingHandler(this));
+    private final Messenger receivingMessenger = new Messenger(handler);
     // To send the messages back according to the AppID
     SparseArray<Messenger> sendingMessengers = new SparseArray<>();
+
+    // Separate thread that connects to other devices and exchanges data
+    Thread mainLoop;
 
     // Configuration values
     long sleepTime = 5000; //5s
     long maxNoContactTime = 60000; //1 min
     long maxNoContactTimeForeignDevices = 60000; //1 min
     String networkName = "MyNetworkName";
+    String userID = "Name noe initialized";
     long maxBufferSize = 1000000;
     private volatile int timeout = 30*60; // TODO: use
     boolean prefsLocked = false;
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId){
+    public void onCreate(){
+        // TODO: get correct name in network (MAC address? Something unique that is easily visible for others)
+
+        userID = "Test Name " + new Date();
         updateFromPreferences();
         buffer = new MessageBuffer(networkName, 1000 * maxBufferSize);
-        // TODO: get correct name in network (MAC address? Something unique that is easily visible for others)
-        String myName = "Test Name " + new Date();
-        lcTable = new LCTable(myName);
-        ackTable = new AckTable(myName);
+        lcTable = new LCTable(userID);
+        ackTable = new AckTable(userID);
         neighbourhood = new NeighbourList();
+    }
 
-        //creating main loop thread
-        Thread mainLoop = new Thread() {
-            public void run() {
-                main();
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId){
+        if (intent.hasExtra("stop")){
+            if(mainLoop != null && mainLoop.isAlive()) {
+                mainLoop.interrupt();
             }
-        };
-        // start separate thread for the main loop
-        mainLoop.start();
+            else{
+                Log.d("MainService", "There is nothing to stop right now.");
+            }
+        }
+        else {
+            updateFromPreferences();
 
+            // make sure old threads are dead
+            if (mainLoop != null && mainLoop.isAlive()) {
+                mainLoop.interrupt();
+            }
+
+            //creating main loop thread
+            mainLoop = new Thread() {
+                public void run() {
+                    main();
+                }
+            };
+            // start separate thread for the main loop
+            mainLoop.start();
+        }
         return START_STICKY;
+
+    }
+
+    @Override
+    public void onDestroy(){
+        this.stop();
+        super.onDestroy();
+    }
+
+    public void stop(){
+        if(mainLoop != null) {
+            mainLoop.interrupt();
+        }
     }
 
     // main loop
@@ -103,15 +145,15 @@ public class MainService extends Service {
             Log.d("Main Loop", "Execution time for one iteration: " + executionTime + "ms");
             try{
                 synchronized (buffer) {
-                    // Spin in case we are nwoken up for wrong reasons
+                    // Spin in case we are woken up for wrong reasons
                     while(!dataChanged && (new Date()).getTime() < start + sleepTime){
                         buffer.wait(sleepTime - executionTime);
                     }
                     dataChanged = false;
                 }
             } catch (InterruptedException e){
-                e.printStackTrace();
-                break;
+                Log.d("Main Service", "Stopping main Loop");
+                return;
             }
         }
     }
@@ -174,8 +216,10 @@ public class MainService extends Service {
     public void updateTimeout(int newTimeout){
         timeout = newTimeout;
     }
+
     /**
-     * When binding to the service, we return an interface to our messenger
+     * When binding to the service from a connector,
+     * we return an interface to our messenger
      * for sending messages to the service.
      */
     @Override
@@ -190,5 +234,18 @@ public class MainService extends Service {
             buffer.notify();
         }
     }
+
+    /**
+     * Class for direct access from our own Activitiy, not from the connector.
+     * Because here we know this service always runs in the same process as the
+     * single client connecting in this way, we don't need to deal with IPC here.
+     *
+     * We need this so we can call stop() from the MainActivity.
+     */
+    //public class LocalBinder extends Binder {
+    //   public MainService getService() {
+    //        return MainService.this;
+    //    }
+    //}
 
 }
