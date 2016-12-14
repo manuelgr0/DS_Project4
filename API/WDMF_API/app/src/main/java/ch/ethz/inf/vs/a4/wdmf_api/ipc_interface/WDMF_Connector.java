@@ -31,15 +31,15 @@ import java.util.List;
 
 public abstract class WDMF_Connector extends Service {
     // Application messages are byte arrays that will be sent to other applications through our API
-    // Use this to send a single application message. Store it in the field with the name obj.
+    // Use this to send a single application message. Store it in the data bundle with the key "data".
     public static final int IPC_MSG_SEND_SINGLE_MESSAGE = 1;
     // Use this to send multiple application messages at once.
-    // Store them in a ArrayList and put it in the field with the name obj.
+    // Store them in a ArrayList and put it in the data bundle with the key "dataList".
     public static final int IPC_MSG_SEND_MESSAGE_LIST = 2;
-    // This is used to receive a single application message. It will be stored in the field with the name obj.
+    // This is used to receive a single application message. It will be stored in the data bundle with the key "data".
     public static final int IPC_MSG_RECV_SINGLE_MESSAGE = 3;
     // This is used to receive multiple application messages at once.
-    // They will be stored in a ArrayList and put it in the field with the name obj.
+    // They will be stored in a ArrayList and put it in the data bundle with the key "dataList".
     public static final int IPC_MSG_RECV_MESSAGE_LIST = 4;
     // Send this to the main Service to start listening to the messages with our appID
     // Make sure to write the Receiving Messenger in the replyTo field of the message
