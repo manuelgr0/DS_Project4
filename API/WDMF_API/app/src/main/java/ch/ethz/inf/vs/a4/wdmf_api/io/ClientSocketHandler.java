@@ -9,6 +9,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 
 import ch.ethz.inf.vs.a4.wdmf_api.ui.MainActivity;
+import ch.ethz.inf.vs.a4.wdmf_api.ui.TestActivity;
 
 /**
  * Created by manue on 24.11.2016.
@@ -31,7 +32,7 @@ public class ClientSocketHandler extends Thread {
         Socket socket = new Socket();
         try {
             socket.bind(null);
-            socket.connect(new InetSocketAddress(mAddress.getHostAddress(), MainActivity.SERVER_PORT), 5000);
+            socket.connect(new InetSocketAddress(mAddress.getHostAddress(), TestActivity.SERVER_PORT), 5000);
             Log.d(TAG, "Launching the I/O handler");
             chat = new MessageManager(socket, handler);
             new Thread(chat).start();
