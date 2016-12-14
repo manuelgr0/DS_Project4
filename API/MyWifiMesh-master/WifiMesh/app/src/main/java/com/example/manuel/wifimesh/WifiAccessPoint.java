@@ -192,6 +192,7 @@ public class WifiAccessPoint implements WifiP2pManager.ConnectionInfoListener,Wi
             if (WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION.equals(action)) {
                 int state = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1);
                 if (state == WifiP2pManager.WIFI_P2P_STATE_ENABLED) {
+                    Log.d("APR received", intent.getExtras().toString());
                     // startLocalService();
                 } else {
                     //stopLocalService();

@@ -84,20 +84,20 @@ public class MainActivity extends AppCompatActivity {
         button1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(serviceRunning) {
+                if(serviceRunning) { // stop all services to start anew
                     serviceRunning = false;
-                    if(mWifiAccessPoint != null){
+                    if(mWifiAccessPoint != null){ // AP already active
                         mWifiAccessPoint.Stop();
                         mWifiAccessPoint = null;
                     }
 
-                    if(mWifiServiceSearcher != null){
-                        mWifiServiceSearcher.Stop();
+                    if(mWifiServiceSearcher != null){ // searcher active
+                        mWifiServiceSearcher.Stop(); // stop searcher (we're AP now)
                         mWifiServiceSearcher = null;
                     }
 
-                    if(mWifiConnection != null) {
-                        mWifiConnection.Stop();
+                    if(mWifiConnection != null) { // already open connection
+                        mWifiConnection.Stop(); // close connection
                         mWifiConnection = null;
                     }
                     Log.d("","Stopped");
@@ -105,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
                     serviceRunning = true;
                     Log.d("","Started");
 
+                    // instantiate new AP and start it
                     mWifiAccessPoint = new WifiAccessPoint(that);
                     mWifiAccessPoint.Start();
 
@@ -116,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
         button2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(serviceRunning) {
+                if(serviceRunning) { // stop all services to start anew, same as in button1
                     serviceRunning = false;
                     if(mWifiAccessPoint != null){
                         mWifiAccessPoint.Stop();
@@ -137,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
                     serviceRunning = true;
                     Log.d("","Started");
 
+                    // start a new service searcher
                     mWifiServiceSearcher = new WifiServiceSearcher(that);
                     mWifiServiceSearcher.Start();
                 }
@@ -161,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
                     final String networkPass = separated[2];
                     final String ipAddress   = separated[3];
 
-                    Log.d("Connection ", "Try to connect.............");
+                    Log.d("Connection ", "Try to connect............." + ipAddress);
                     mWifiConnection = new WifiConnection(that,networkSSID,networkPass);
                     mWifiConnection.SetInetAddress(ipAddress);
                 }
@@ -175,7 +177,9 @@ public class MainActivity extends AppCompatActivity {
                 WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
                 String ip = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
                 Log.d("Sender ip is:", ip);
-                if(mWifiConnection.GetInetAddress() == ip){
+                //if(mWifiConnection.GetInetAddress() == ip){
+                if (mWifiConnection == null) {
+                    Log.d("status", "................group owner");
                     chat = new ChatManager(groupSocket.getSocket(), myHandler, "Group!!!!!");
                     new Thread(chat).start();
                 } else {
