@@ -51,6 +51,10 @@ public class WifiServiceSearcher  implements WifiP2pManager.ChannelListener{
     private WifiP2pManager.DnsSdServiceResponseListener serviceListener;
     private WifiP2pManager.PeerListListener peerListListener;
 
+    private WifiP2pDnsSdServiceRequest mDnsSdServiceRequest;
+    private Handler mServiceDiscoveryHandler;
+    private boolean mServiceDiscoveryKeepGoing;
+
     enum ServiceState{
         NONE,
         DiscoverPeer,
@@ -165,42 +169,64 @@ public class WifiServiceSearcher  implements WifiP2pManager.ChannelListener{
 
     private void startServiceDiscovery() {
 
-        WifiP2pDnsSdServiceRequest request = WifiP2pDnsSdServiceRequest.newInstance(MainActivity.SERVICE_TYPE);
-        final Handler handler = new Handler();
-        p2p.addServiceRequest(channel, request, new WifiP2pManager.ActionListener() {
-
-            public void onSuccess() {
-                Log.d(TAG, "Added service request");
-                handler.postDelayed(new Runnable() {
-                    //There are supposedly a possible race-condition bug with the service discovery
-                    // thus to avoid it, we are delaying the service discovery start here
-                    public void run() {
-                        p2p.discoverServices(channel, new WifiP2pManager.ActionListener() {
-                            public void onSuccess() {
-                                p2p.discoverServices(channel, new WifiP2pManager.ActionListener() {
-                                    public void onSuccess() {
-                                        Log.d(TAG, "Started service discovery");
-                                        myServiceState = ServiceState.DiscoverService;
-                                    }
-                                    public void onFailure(int reason) {Log.d(TAG, "Starting service discovery failed, error code " + reason);}
-                                });
-
-                            }
-                            public void onFailure(int reason) {Log.d(TAG, "Starting service discovery failed, error code " + reason);}
-                        });
-                    }
-                }, 1500);
-            }
-
-            public void onFailure(int reason) {
-                Log.d(TAG, "Adding service request failed, error code " + reason);
-                // No point starting service discovery
-            }
-        });
+        mDnsSdServiceRequest = WifiP2pDnsSdServiceRequest.newInstance(MainActivity.SERVICE_TYPE);
+        mServiceDiscoveryHandler = new Handler();
+        mServiceDiscoveryKeepGoing = true;
+        repeatingServiceDiscoveryPart();
 
     }
 
+    private void repeatingServiceDiscoveryPart() {
+        p2p.clearServiceRequests(channel, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                //Log.d(TAG, "Cleared service requests");
+                p2p.addServiceRequest(channel, mDnsSdServiceRequest, new WifiP2pManager.ActionListener() {
+
+                    @Override
+                    public void onSuccess() {
+                        //Log.d(TAG, "Added service request");
+
+                        p2p.discoverServices(channel, new WifiP2pManager.ActionListener() {
+                            public void onSuccess() {
+                                //Log.d(TAG, "Started service discovery, will restart after a delay");
+                                myServiceState = ServiceState.DiscoverService;
+
+                                // Call this function again after a delay
+                                mServiceDiscoveryHandler.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+
+                                        // Check if stopDiscovery has been called in the meantime
+                                        if (mServiceDiscoveryKeepGoing) {
+                                            repeatingServiceDiscoveryPart();
+                                        }
+                                    }
+                                }, 10000L);
+                            }
+
+                            public void onFailure(int reason) {
+                                Log.d(TAG, "Starting service discovery failed, error code " + reason);
+                            }
+                        });
+                    }
+
+                    public void onFailure(int reason) {
+                        Log.d(TAG, "Adding service request failed, error code " + reason);
+                        // No point starting service discovery
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(int reason) {
+                Log.d(TAG, "Adding service request failed, error code " + reason);
+            }
+        });
+    }
+
     private void stopDiscovery() {
+        mServiceDiscoveryKeepGoing = false;
         p2p.clearServiceRequests(channel, new WifiP2pManager.ActionListener() {
             public void onSuccess() {Log.d(TAG, "Cleared service requests");}
             public void onFailure(int reason) {Log.d(TAG, "Clearing service requests failed, error code " + reason);}
