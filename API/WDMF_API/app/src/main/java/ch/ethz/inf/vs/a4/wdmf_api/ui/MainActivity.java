@@ -18,14 +18,8 @@ import ch.ethz.inf.vs.a4.wdmf_api.service.IncomingHandler;
 import ch.ethz.inf.vs.a4.wdmf_api.service.MainService;
 
 public class MainActivity extends AppCompatActivity  {
+   //TODO: UI reorganisation + design
 
-
-   /* private final WDMF_Connector connector = new WDMF_Connector(this, "Test App from Manu and Köbi") {
-        @Override
-        public void onReceiveMessage(byte[] msg) {
-            // Do nothing for now, calling it is not implemented yet anyway
-        }
-    };*/
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,22 +54,6 @@ public class MainActivity extends AppCompatActivity  {
             }
         });
 
-        /*Button btn_send1 = (Button) findViewById(R.id.send1);
-        btn_send1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                connector.broadcastMessage(new byte[]{1,2,3});
-            }
-        });
-        Button btn_send2 = (Button) findViewById(R.id.send2);
-        btn_send2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                connector.broadcastMessage(new byte[]{-1,-2,-3});
-                connector.setNetworkTag("New Name");
-                Log.d("XXXX", "Buffer Size:"  + connector.get_buffer_size() + "KB");
-            }
-        });*/
         Button btn_settings = (Button) findViewById(R.id.settingsButton);
         btn_settings.setOnClickListener(new View.OnClickListener() {
             @Override

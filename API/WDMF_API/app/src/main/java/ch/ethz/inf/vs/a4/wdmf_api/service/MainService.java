@@ -19,7 +19,6 @@ import java.util.List;
 import ch.ethz.inf.vs.a4.wdmf_api.io.Packet;
 import ch.ethz.inf.vs.a4.wdmf_api.ipc_interface.WDMF_Connector;
 import ch.ethz.inf.vs.a4.wdmf_api.R;
-import ch.ethz.inf.vs.a4.wdmf_api.local_data.EnumeratedMessage;
 import ch.ethz.inf.vs.a4.wdmf_api.local_data.MessageBuffer;
 import ch.ethz.inf.vs.a4.wdmf_api.local_data.NeighbourList;
 import ch.ethz.inf.vs.a4.wdmf_api.network_protocol_data.AckTable;
@@ -49,8 +48,9 @@ public class MainService extends Service {
     String networkName = "MyNetworkName";
     String userID = "Name noe initialized";
     long maxBufferSize = 1000000;
-    private volatile int timeout = 30*60; // TODO: use
+    public static volatile int timeout = 30*60*1000;
     boolean prefsLocked = false;
+    static int MAX_REORDERING = 8;
 
     @Override
     public void onCreate(){
@@ -58,9 +58,9 @@ public class MainService extends Service {
 
         userID = "Test Name " + new Date();
         updateFromPreferences();
-        buffer = new MessageBuffer(networkName, 1000 * maxBufferSize);
         lcTable = new LCTable(userID);
         ackTable = new AckTable(userID);
+        buffer = new MessageBuffer(networkName, 1000 * maxBufferSize, ackTable, lcTable);
         neighbourhood = new NeighbourList();
     }
 
@@ -128,7 +128,7 @@ public class MainService extends Service {
                     if (lcTable.hasKey(neighbour)) {
                         // See if we have new data for the node, according to our ACK table,
                         // or otherwise check when we've had contact with him last time
-                        if (buffer.hasMessagesForReceiver(neighbour, ackTable)
+                        if (buffer.hasMessagesForReceiver(neighbour)
                                 || lcTable.entryIsOlderThan(neighbour, (new Date()).getTime() - maxNoContactTime)) {
                             syncPeerToPeer(neighbour);
                         }
@@ -141,6 +141,14 @@ public class MainService extends Service {
                             neighbourhood.update_neighbour(neighbour);
                         }
                     }
+                }
+            }
+
+            //remove old nodes from network
+            for(String node : lcTable.getNodeSet()){
+                if(lcTable.entryIsOlderThan(node, timeout)){
+                    ackTable.removeNode(node);
+                    lcTable.removeNode(node);
                 }
             }
 
@@ -165,10 +173,7 @@ public class MainService extends Service {
     // Initiate connection to exchange tables and messages
     private void syncPeerToPeer(String neighbour){
         // TODO: wifiSend and wifiBlockingReceive:)
-        // TODO: detect if other nodes think we got message already (msg has been dropped)
-        //       Note that the las point is quite important for the case where a node goes offline
-        //       for some time and joins the network again, but also just for joining a network late,
-        //       if you don't do that it will wait for seq 0 forever...
+
 
 
         /*   I assume the following behaviour of the Wifi IO backend:
@@ -178,7 +183,7 @@ public class MainService extends Service {
         *   boolean wifiBlockingReceive(String node); blocks until the full data from the other node
         *    has arrived. If the connection fails, or when a timeout occurs, it will return false.
         *
-        *   Of course this could be implemented differently, this is just an idea! But fot my
+        *   Of course this could be implemented differently, this is just an idea! But for my
         *   code to work it should probably be similar to that idea, at least. But I don't know
         *   how it will look like, maybe we also have to call something like connect(neighbour)
         *   first and close() to have a persistent connection, I guess we don't want to build up
@@ -203,10 +208,7 @@ public class MainService extends Service {
 
         // 2. Send data from buffer
         Packet myData = new Packet(
-                buffer.getEnumeratedMessagesForReceiver(
-                        neighbour,
-                        ackTable
-                )
+                buffer.getEnumeratedMessagesForReceiver(neighbour)
         );
 //UNCOMMENT when done        wifiSend(neighbour, myData.getRawData());
 
@@ -228,6 +230,7 @@ public class MainService extends Service {
         // On the other hand, if we can deliver one client-message, we should also check the
         // local buffer for successor client-messages.
 
+        buffer.bufferedButNotDelivered = 0; // This is done here so we can count the sum of all appIDs
         for(int i = 0; i < sendingMessengers.size(); i++)
         {
             int appId = sendingMessengers.keyAt(i);
@@ -237,7 +240,8 @@ public class MainService extends Service {
             // - find the messages that can be delivered now
             // - order them correctly
             // - compute the new sequence numbers and directly update them in the ACK-table
-            ArrayList<byte[]> deliveryData = buffer.getMessagesReadyForDelivery(appId, ackTable);
+            // - count the number of buffered message we can't deliver yet
+            ArrayList<byte[]> deliveryData = buffer.getMessagesReadyForDelivery(appId);
 
             if (deliveryData.size() > 0) {
                 // Note: This is an Android IPC Message, nothing to do with our custom messages that we flood
@@ -279,13 +283,28 @@ public class MainService extends Service {
             Log.d(TAG, "networks don't match");
             return false;
         }
+
+        // Detect lost messages (in case everyone dropped it from the buffer)
+        // This is crucial for the case where a node goes offline for some time and
+        // joins the network again. As soon as we have more than XXX number of stored messages
+        // that we could deliver, but we have to wait for the ordering, we should skip
+        // some seq_numbers
+
+        if(buffer.bufferedButNotDelivered > MAX_REORDERING) {
+            buffer.skipSomeSeqNrs();
+        }
+
         //  Merge LC-/Ack-table
         lcTable.merge(neighbour, theirTables.getLCTable());
         ackTable.merge(theirTables.getAckTable());
+
+        // Remove unused messages from local buffer
+        buffer.removeMessagesWhichReachedEveryone();
+
         return true;
     }
 
-    // Adds the neigbour to the list of "foreign devices" <=> neighbour type 2
+    // Adds the neighbour to the list of "foreign devices" <=> neighbour type 2
     // In that way we will retry after some time, but we will not try each iterations
     // even if a device stopped the app using our API.
     private void connectionFailed(String neighbour){
@@ -335,9 +354,9 @@ public class MainService extends Service {
             networkName = newName;
             if(buffer != null) {
                 synchronized (buffer) {
-                    buffer = new MessageBuffer(networkName, maxBufferSize);
                     lcTable = new LCTable(networkName);
                     ackTable = new AckTable(networkName);
+                    buffer = new MessageBuffer(networkName, maxBufferSize, ackTable, lcTable);
                 }
             }
         }
@@ -363,18 +382,5 @@ public class MainService extends Service {
             buffer.notify();
         }
     }
-
-    /**
-     * Class for direct access from our own Activitiy, not from the connector.
-     * Because here we know this service always runs in the same process as the
-     * single client connecting in this way, we don't need to deal with IPC here.
-     *
-     * We need this so we can call stop() from the MainActivity.
-     */
-    //public class LocalBinder extends Binder {
-    //   public MainService getService() {
-    //        return MainService.this;
-    //    }
-    //}
 
 }

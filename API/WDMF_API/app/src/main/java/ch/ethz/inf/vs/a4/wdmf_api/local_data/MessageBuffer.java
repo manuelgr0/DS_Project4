@@ -4,16 +4,22 @@ package ch.ethz.inf.vs.a4.wdmf_api.local_data;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.PriorityQueue;
+import java.util.concurrent.ThreadLocalRandom;
 
 import ch.ethz.inf.vs.a4.wdmf_api.network_protocol_data.AckTable;
+import ch.ethz.inf.vs.a4.wdmf_api.network_protocol_data.LCTable;
+import ch.ethz.inf.vs.a4.wdmf_api.service.IncomingHandler;
+import ch.ethz.inf.vs.a4.wdmf_api.service.MainService;
 
 /**
  * Created by Jakob on 24.11.2016.
  */
 
 // TODO: Split up large messages
-// TODO: Replacement policy
 
 final public class MessageBuffer {
     // In the ACK-table we store the nr we have received already, so we start with init_seq_nr + 1
@@ -21,15 +27,21 @@ final public class MessageBuffer {
     private ArrayList<EnumeratedMessage> buffer;
     private String owner;
     private long memory_space;
+    public int bufferedButNotDelivered = 0;
+    // local reference to ACK-Table so we can make more sophisticated replacement policies
+    private AckTable ackTable;
+    private LCTable lcTable;
 
     // Provide the name in the network associated with the local node
     // and specify the max bytes that should be buffered
-    public MessageBuffer(String ownerIdentifier, long bufferSize) {
+    public MessageBuffer(String ownerIdentifier, long bufferSize, AckTable at, LCTable lc) {
         owner = ownerIdentifier;
         buffer = new ArrayList<EnumeratedMessage>();
         memory_space = bufferSize;
-        if(memory_space <= 0) {
-            throw new IllegalArgumentException("bufferSize must be positive");
+        ackTable = at;
+        lcTable = lc;
+        if(memory_space <= 0 ||at == null || lc == null) {
+            throw new IllegalArgumentException("bufferSize must be positive and tables initialized");
         }
     }
 
@@ -37,6 +49,7 @@ final public class MessageBuffer {
     public void addLocalMessage(byte[] msg, int appID){
         // Disable for JUnit test
         // Log.d("Message Buffer", "Message buffer stores data:\n" + Arrays.toString(msg));
+
         EnumeratedMessage em = new EnumeratedMessage(msg, seq_nr, owner, appID);
         insertEnumeratedMessage(em);
         seq_nr++;
@@ -90,10 +103,10 @@ final public class MessageBuffer {
 
     // Creates a list of raw data arrays containing all the enumerated messages
     // that has not reached the specified receiver yet
-    public ArrayList<byte[]> getEnumeratedMessagesForReceiver(String receiver, AckTable at){
-        ArrayList<byte[]> result = new ArrayList<byte[]>();
+    public ArrayList<byte[]> getEnumeratedMessagesForReceiver(String receiver){
+        ArrayList<byte[]> result = new ArrayList<>();
         for(EnumeratedMessage em : buffer) {
-            if(at.get(em.sender, receiver) <  seq_nr){
+            if(ackTable.get(em.sender, receiver) <  seq_nr){
                 result.add(em.raw());
             }
         }
@@ -111,19 +124,135 @@ final public class MessageBuffer {
     // Kick out messages until we have at least X bytes free memory
     // Throws OutOfMemoryError if the entire buffer is smaller than the required bytes
     private void makeSpace(int bytes){
-        // Remove buffer until we have enough space
+        // First remove what we don't need for sure
+        removeMessagesWhichReachedEveryone();
+
+        if(bytes <= memory_space) {
+            return;
+        }
+
+        ArrayList<Integer> removeOrder = randomizedImportanceOrderOfMessageIndexes();
+        ArrayList<Integer> removed = new ArrayList<>();
+
+        // Remove messages from buffer until we have enough space
         while(bytes > memory_space && !buffer.isEmpty()){
-            // TODO: change replacement policy here
-            // Remove oldest
-            memory_space += buffer.get(0).size();
-            buffer.remove(0);
+
+            int i = removeOrder.remove(0);
+            removed.add(i);
+
+            // Adjust index:
+            for(int j : removed){
+                if(j < i) { i--; }
+            }
+
+            memory_space += buffer.get(i).size();
+            buffer.remove(i);
+
         }
         if (memory_space < bytes) {
             throw new OutOfMemoryError();
         }
     }
 
-    public boolean hasMessagesForReceiver(String receiver, AckTable ackTable) {
+    // REPLACEMENT POLICIES //////////////////////////////////////////////////////////////
+    // Should also be called whenever the ACK-table is updated
+    public void removeMessagesWhichReachedEveryone(){
+        for(int i = buffer.size() - 1; i >= 0; i--) {
+            if(ackTable.reachedAll(buffer.get(i).sender, buffer.get(i).seq)){
+                memory_space += buffer.get(i).size();
+                buffer.remove(i);
+            }
+        }
+    }
+
+    // FIFO
+    private int oldestMessageIndex(){
+        return 0;
+    }
+    // Prioritize message which many nodes have gotten already to be removed, but choose randomly
+    // so that not everyone removes the same messages. Also give older nodes a higher probability
+    // to be removed
+    // Only remove messages which are for the owner of the buffer after delivery or if it there are
+    // no other messages left.
+    private ArrayList<Integer> randomizedImportanceOrderOfMessageIndexes(){
+        PriorityQueue<PriorityTuple> priorQ = new PriorityQueue<>(buffer.size());
+        int networkSize = ackTable.width();
+        for(int i = 0; i < buffer.size(); i++){
+            PriorityTuple pi = new PriorityTuple(i);
+
+            // each nodes that has not been reached yet is making the node more important
+            // the longer we haven't seen the node, the smaller that importance change is
+            // [0,1]
+            float change =ackTable.notReached(buffer.get(i).sender, buffer.get(i).seq);
+            change /= (float)networkSize; // mapped to [0,1]
+            long time = lcTable.getLastContactTimestamp(buffer.get(i).sender) - new Date().getTime();
+            change *= 1.0f - ((float) time / (float)MainService.timeout);
+            pi.priority += change;
+
+            // new messages are more important
+            // [0, 0.5]
+            pi.priority += 0.5 * (float) i / (float)buffer.size() ;
+
+            // add a random number to achieve asymmetric behaviour
+            // [0, 0.5]
+            pi.priority += 0.5 * ThreadLocalRandom.current().nextFloat();
+
+            // most important are all messages that we have not delivered to our clients, yet
+            if(ackTable.get(buffer.get(i).sender, owner) < buffer.get(i).seq){
+                pi.priority += 100;
+            }
+            priorQ.add(pi);
+        }
+        ArrayList<Integer> result = new ArrayList<>(buffer.size());
+        while(!priorQ.isEmpty()){
+            result.add(priorQ.poll().index);
+        }
+        return result;
+    }
+
+    // ATTENTION: Side effect on ACK-Table
+    public void skipSomeSeqNrs() {
+        // Uses compare defined in EnumeratedMessage.java
+        PriorityQueue<EnumeratedMessage> forApp = new PriorityQueue<>();
+        for(EnumeratedMessage em : buffer) {
+            if(ackTable.get(em.sender, ackTable.getOwner()) <  em.seq){
+                forApp.add(em);
+            }
+        }
+
+        Hashtable<String, Integer> newSeqNrs = new Hashtable<>();
+        while(!forApp.isEmpty()){
+            // Extract message with smallest sequence number
+            EnumeratedMessage em = forApp.poll();
+            if(!newSeqNrs.containsKey(em.sender)){
+                // must be the smallest seq number present greater than the owners seq number
+                newSeqNrs.put(em.sender, em.seq-1);
+            }
+        }
+
+        for( String sender : newSeqNrs.keySet()) {
+            ackTable.update(sender, newSeqNrs.get(sender));
+        }
+    }
+
+    private class PriorityTuple implements Comparable<PriorityTuple> {
+        public float priority = 0.0f;
+        public int index;
+        public PriorityTuple(int i){
+            index = i;
+        }
+        @Override
+        public int compareTo(PriorityTuple o) {
+            if (this.priority < o.priority) return -1;
+            if (this.priority > o.priority) return 1;
+            return 0;
+        }
+    }
+
+    // END REPLACEMENT POLICIES //////////////////////////////////////////////////////////
+
+
+    public boolean hasMessagesForReceiver(String receiver) {
         for(EnumeratedMessage em : buffer) {
             if(ackTable.get(em.sender, receiver) <  seq_nr){
                 return true;
@@ -136,21 +265,28 @@ final public class MessageBuffer {
     //    by looking at the entries in the ACK-table
     // - order the messages correctly
     // - compute the new sequence numbers and directly update them in the ACK-table
-    public ArrayList<byte[]> getMessagesReadyForDelivery(int appId, AckTable ackTable) {
+    // ATTENTION: Side effect on ACK-Table
+    public ArrayList<byte[]> getMessagesReadyForDelivery(int appId) {
         ArrayList<byte[]> result = new ArrayList<>();
         // Uses compare defined in EnumeratedMessage.java
         PriorityQueue<EnumeratedMessage> forApp = new PriorityQueue<>();
         for(EnumeratedMessage em : buffer) {
-            if(ackTable.get(em.sender, ackTable.getOwner()) <  em.seq){
+            if(ackTable.get(em.sender, ackTable.getOwner()) <  em.seq
+                    && em.appId == appId){
                 forApp.add(em);
             }
         }
         // Add enumerated messages in order if no earlier seq_nr is missing
-        for(EnumeratedMessage em : forApp){
+        while(!forApp.isEmpty()){
+            // Extract message with smallest sequence number
+            EnumeratedMessage em = forApp.poll();
             // Exactly the message we are waiting for from this receiver
             if(ackTable.get(em.sender, ackTable.getOwner()) + 1  == em.seq ){
                 result.add(em.msg);
                 ackTable.update(em.sender, em.seq);
+            }
+            else{
+                bufferedButNotDelivered += 1;
             }
         }
 

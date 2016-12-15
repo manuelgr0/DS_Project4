@@ -51,7 +51,7 @@ public abstract class WDMF_Connector extends Service {
     public static final int IPC_MSG_SET_TIMEOUT_ACK = 9;
     public static final int IPC_MSG_SET_BUFFER_SIZE = 10;
     public static final int IPC_MSG_SET_BUFFER_SIZE_ACK = 11;
-    // TODO: other preferences?
+
     // This is used to find where exactly the Service resides in the namespace
     private static final String packageName = "ch.ethz.inf.vs.a4.wdmf_api";
     private static final String serviceName = "ch.ethz.inf.vs.a4.wdmf_api.service.MainService";

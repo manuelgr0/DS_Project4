@@ -3,6 +3,7 @@ package ch.ethz.inf.vs.a4.wdmf_api.network_protocol_data;
 
 import java.util.Date;
 import java.util.Hashtable;
+import java.util.Set;
 
 public class LCTable {
 
@@ -16,6 +17,18 @@ public class LCTable {
     public LCTable(String node, Hashtable<String, Long> h) {
         this.owner = node;
         this.hash = h;
+    }
+
+    public long getLastContactTimestamp(String node){
+        return hash.get(node);
+    }
+
+    public Set<String> getNodeSet(){
+        return hash.keySet();
+    }
+
+    public void removeNode(String node){
+        hash.remove(node);
     }
 
     public String getOwner() {

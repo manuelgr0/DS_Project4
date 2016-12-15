@@ -72,7 +72,6 @@ public class AckTable {
             hash.get(other.owner).remove(other.owner);
             other.hash.get(other.owner).remove(other.owner);
             return;
-
         }
 
 
@@ -143,6 +142,27 @@ public class AckTable {
 
     }
 
+    public int width(){
+        return hash.size();
+    }
+
+    public int notReached(String sender, int seqNo) {
+        int result = 0;
+        for (String rec : this.hash.get(sender).keySet()) {
+            if (sender != rec && this.hash.get(sender).get(rec) < seqNo) {
+                result ++;
+            }
+        }
+
+        return result;
+    }
+
+    public void removeNode(String node){
+        for(String other : hash.keySet()){
+            hash.get(other).remove(node);
+        }
+        hash.remove(node);
+    }
 }
 
 
