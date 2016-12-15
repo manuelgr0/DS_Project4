@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Handler;
@@ -20,6 +21,7 @@ import android.widget.TextView;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -35,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
     WifiAccessPoint        mWifiAccessPoint = null;
     WifiConnection         mWifiConnection = null;
     Boolean serviceRunning = false;
+
+    private String serverIp;
 
     //change me  to be dynamic!!
     public String CLIENT_PORT_INSTANCE = "38000";
@@ -205,17 +209,21 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if(mWifiConnection != null) {
                     mWifiConnection.Stop();
+                    mWifiConnection = null;
                 }
                 if(mWifiAccessPoint != null){
                     mWifiAccessPoint.Stop();
+                    mWifiAccessPoint = null;
                 }
 
                 if(mWifiServiceSearcher != null){
                     mWifiServiceSearcher.Stop();
+                    mWifiServiceSearcher = null;
                 }
                 if(clientSocket != null) {
                     try {
                         clientSocket.close_socket();
+                        clientSocket = null;
                         Log.d("Closing", "ClientSocket closed");
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -224,12 +232,20 @@ public class MainActivity extends AppCompatActivity {
                 if(groupSocket != null) {
                     try {
                         groupSocket.close_socket();
+                        groupSocket = null;
                         Log.d("Closing", "ServerSocket closed");
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
                 Log.d("Closing", "  COMPLETE!!");
+
+                WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+                List<WifiConfiguration> list = wm.getConfiguredNetworks();
+                for( WifiConfiguration i : list ) {
+                    wm.removeNetwork(i.networkId);
+                    wm.saveConfiguration();
+                }
             }
         });
 
@@ -315,11 +331,11 @@ public class MainActivity extends AppCompatActivity {
             }else if (WifiConnection.DSS_WIFICON_SERVERADDRESS.equals(action)) {
                 int addr = intent.getIntExtra(WifiConnection.DSS_WIFICON_INETADDRESS, -1);
                 Log.d("COM", "IP" + Formatter.formatIpAddress(addr));
-
+                serverIp = Formatter.formatIpAddress(addr);
                 if(clientSocket == null &&  mWifiConnection != null) {
-                    String IpToConnect = mWifiConnection.GetInetAddress();
-                    Log.d("","Starting client socket conenction to : " + IpToConnect);
-                    clientSocket = new ClientSocketHandler(myHandler,IpToConnect, Integer.parseInt(CLIENT_PORT_INSTANCE), that);
+                    //String IpToConnect = mWifiConnection.GetInetAddress();
+                    Log.d("","Starting client socket conenction to : " + serverIp);
+                    clientSocket = new ClientSocketHandler(myHandler,serverIp, Integer.parseInt(CLIENT_PORT_INSTANCE), that);
                     clientSocket.start();
                 }
             }else if (WifiConnection.DSS_WIFICON_STATUSVAL.equals(action)) {
