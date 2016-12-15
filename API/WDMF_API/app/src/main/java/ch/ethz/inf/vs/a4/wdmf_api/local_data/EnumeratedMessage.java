@@ -7,7 +7,7 @@ import java.util.Arrays;
  * Created by Jakob on 14.12.2016.
  */
 
-public class EnumeratedMessage{
+public class EnumeratedMessage implements Comparable<EnumeratedMessage>{
     public int seq;
     public String sender;
     public byte[] msg;
@@ -76,5 +76,13 @@ public class EnumeratedMessage{
     // size of stored enumerated message
     public int size(){
         return msg.length + sender.length()*2 + 8;
+    }
+
+    // order by sequence_number
+    @Override
+    public int compareTo(EnumeratedMessage o) {
+        if (this.seq < o.seq) return -1;
+        if (this.seq > o.seq) return 1;
+        return 0;
     }
 }

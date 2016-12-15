@@ -165,7 +165,6 @@ public class MainService extends Service {
     // Initiate connection to exchange tables and messages
     private void syncPeerToPeer(String neighbour){
         // TODO: wifiSend and wifiBlockingReceive:)
-        // TODO: reorder messages and buffer them
         // TODO: detect if other nodes think we got message already (msg has been dropped)
         //       Note that the las point is quite important for the case where a node goes offline
         //       for some time and joins the network again, but also just for joining a network late,
@@ -204,46 +203,60 @@ public class MainService extends Service {
 
         // 2. Send data from buffer
         Packet myData = new Packet(
-                buffer.getMessagesForReceiver(
+                buffer.getEnumeratedMessagesForReceiver(
                         neighbour,
                         ackTable
                 )
         );
 //UNCOMMENT when done        wifiSend(neighbour, myData.getRawData());
 
-        // 3. Receive data, unpack it, store it and deliver it to the clients
+        // 3. Receive data, unpack it and store it
         byte[] answerRawData = new byte[0];
 //UNCOMMENT when done        byte[] answerRawData = wifiBlockingReceive(neighbour); // might fail => return in that case
         Packet theirData = new Packet(answerRawData);
         Log.d(TAG, "Buffer data exchange successful, applying data now.");
         for (byte[] message : theirData.getMessageContents()) {
-            // unpack
-            EnumeratedMessage emsg = new EnumeratedMessage(message);
+            // unpack and store hidden in MessageBuffer class
+            buffer.addRawEnumeratedMessage(message);
+        }
+        // 4. Delivery
 
-            // store
-            buffer.addRemoteMessage(neighbour, emsg.seq, emsg.msg, emsg.appId);
+        // If the client-message is one we have been waiting for (EXACT sequence number),
+        // only then we want to deliver it to the client apps and update the ACK-table.
+        // Otherwise we have to wait with the delivery to ensure the correct order of messages
+        // and the ACK-table can only store "everything before N has been received" anyway.
+        // On the other hand, if we can deliver one client-message, we should also check the
+        // local buffer for successor client-messages.
 
-            // deliver to an app if one is listed for the given AppId
-            Messenger client = sendingMessengers.get(emsg.appId);
-            if (client != null) {
+        for(int i = 0; i < sendingMessengers.size(); i++)
+        {
+            int appId = sendingMessengers.keyAt(i);
+            Messenger client = sendingMessengers.get(appId);
+
+            // buffer.getMessagesReadyForDelivery does all the hard work for us to:
+            // - find the messages that can be delivered now
+            // - order them correctly
+            // - compute the new sequence numbers and directly update them in the ACK-table
+            ArrayList<byte[]> deliveryData = buffer.getMessagesReadyForDelivery(appId, ackTable);
+
+            if (deliveryData.size() > 0) {
                 // Note: This is an Android IPC Message, nothing to do with our custom messages that we flood
-                Message delivery =  Message.obtain(null, WDMF_Connector.IPC_MSG_SEND_SINGLE_MESSAGE, emsg.appId, 0);
+                Message delivery = Message.obtain(null, WDMF_Connector.IPC_MSG_SEND_MESSAGE_LIST, appId, 0);
                 Bundle b = new Bundle();
-                b.putByteArray("data", emsg.msg);
+                b.putSerializable("dataList", deliveryData);
                 delivery.setData(b);
                 try {
                     client.send(delivery);
-                    // update ACK-table after successful delivery
-                    ackTable.update(emsg.sender, emsg.seq);
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }
             }
         }
 
-        // 4. Update Ack-table according to what has been sent to the neighbour
-        //   We can just exchange the acktables again here, in that way we even
-        //   catch all errors that happened on the way, for instance RemoteExceptions in the IPC
+        // 5. Update Ack-table with neighbour
+        //   We have to exchange the ACK-tables again here, in that way we even
+        //   catch all errors that happened on the way and all cascaded ACKs
+        //   from locally buffered messages with higher sequence number.
         Log.d(TAG, "Finished applying data, exchange ACK-table again to finish the connection.");
         exchangeTables(neighbour);
 
