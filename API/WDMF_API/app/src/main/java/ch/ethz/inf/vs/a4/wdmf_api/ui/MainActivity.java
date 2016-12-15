@@ -10,7 +10,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.TextView;
 
+
+import org.w3c.dom.Text;
 
 import ch.ethz.inf.vs.a4.wdmf_api.ipc_interface.WDMF_Connector;
 import ch.ethz.inf.vs.a4.wdmf_api.R;
@@ -25,30 +29,20 @@ public class MainActivity extends AppCompatActivity  {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // >> ONLY FOR TESTING <<
-        Button testButton = (Button) findViewById(R.id.testButton);
-        testButton.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v){
-                Intent myIntent = new Intent(MainActivity.this, TestActivity.class);
-                MainActivity.this.startActivity(myIntent);
-            }
-        });
-        // END ONLY FOR TESTING //////
-
         // SEND MSG TO SERVICE TESTER //
 
-        final Button btn = (Button) findViewById(R.id.startService);
+        final ImageButton btn = (ImageButton) findViewById(R.id.startButton);
+        final TextView txt = (TextView) findViewById(R.id.textView);
         btn.setOnClickListener(new View.OnClickListener() {
             boolean on = false;
             @Override
             public void onClick(View v) {
                 if (on) {
                     stopWDMFAPI();
-                    btn.setText("Start Service");
+                    txt.setText("Off");
                 } else {
                     startWDMFAPI();
-                    btn.setText("Stop Service");
+                    txt.setText("On");
                 }
                 on = !on;
             }

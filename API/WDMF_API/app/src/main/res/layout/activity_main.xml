@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="WiFi Direct Message Flooding API"
+    xmlns:app2="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
@@ -12,35 +13,16 @@
     tools:context="ch.ethz.inf.vs.a4.wdmf_api.ui.MainActivity">
 
 
-
-
-    <Button
-        android:text="Start Service"
+    <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/startService"
-        android:layout_alignParentBottom="true"
+        app2:srcCompat="@android:drawable/ic_lock_power_off"
+        android:id="@+id/startButton"
+        android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true" />
-
-    <Button
-        android:text="Send msg1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/startService"
-        android:layout_alignParentStart="true"
-        android:id="@+id/send1"
-        android:layout_alignEnd="@+id/device" />
-
-    <Button
-        android:text="Send Msg2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/send2"
-        android:layout_alignBaseline="@+id/send1"
-        android:layout_alignBottom="@+id/send1"
         android:layout_alignParentEnd="true"
-        android:layout_toEndOf="@+id/device" />
+        android:layout_above="@+id/textView"
+        style="@android:style/Widget.ImageButton" />
 
     <Button
         android:text="settings"
@@ -48,16 +30,19 @@
         android:layout_height="wrap_content"
         android:id="@+id/settingsButton"
         style="@style/Widget.AppCompat.Button"
-        android:layout_above="@+id/send1"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true" />
 
-    <Button
-        android:text="Test environment"
+    <TextView
+        android:text="Off"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:id="@+id/testButton"
+        android:id="@+id/textView"
+        android:layout_marginBottom="43dp"
+        android:textAlignment="center"
+        android:textSize="36sp"
+        android:layout_above="@+id/settingsButton"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true" />
 

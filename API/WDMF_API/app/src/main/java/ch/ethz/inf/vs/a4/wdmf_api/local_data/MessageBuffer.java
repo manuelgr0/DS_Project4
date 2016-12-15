@@ -19,7 +19,7 @@ import ch.ethz.inf.vs.a4.wdmf_api.service.MainService;
  * Created by Jakob on 24.11.2016.
  */
 
-// TODO: Split up large messages
+// TODO: Split up large messages (if required by backend)
 
 final public class MessageBuffer {
     // In the ACK-table we store the nr we have received already, so we start with init_seq_nr + 1

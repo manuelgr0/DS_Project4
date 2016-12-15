@@ -142,7 +142,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     protected void onCreate(Bundle savedInstanceState) {
         context = this;
         super.onCreate(savedInstanceState);
-        setupActionBar();
+        //setupActionBar();
     }
 
     /**

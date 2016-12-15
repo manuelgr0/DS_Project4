@@ -28,11 +28,6 @@
             </intent-filter>
         </activity>
 
-        <receiver
-            android:name=".io.WiFiDirectBroadcastReceiver"
-            android:enabled="true"
-            android:exported="true" />
-
         <service
             android:name=".service.MainService"
             android:enabled="true"
@@ -49,7 +44,6 @@
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".ui.TestActivity"></activity>
     </application>
 
 </manifest>
