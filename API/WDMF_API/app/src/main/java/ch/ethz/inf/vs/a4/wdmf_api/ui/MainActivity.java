@@ -3,6 +3,8 @@ package ch.ethz.inf.vs.a4.wdmf_api.ui;
 import android.content.ComponentName;
 import android.content.Intent;
 
+import android.content.ServiceConnection;
+import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,16 +14,18 @@ import android.widget.Button;
 
 import ch.ethz.inf.vs.a4.wdmf_api.ipc_interface.WDMF_Connector;
 import ch.ethz.inf.vs.a4.wdmf_api.R;
+import ch.ethz.inf.vs.a4.wdmf_api.service.IncomingHandler;
+import ch.ethz.inf.vs.a4.wdmf_api.service.MainService;
 
 public class MainActivity extends AppCompatActivity  {
 
 
-    private final WDMF_Connector connector = new WDMF_Connector(this, "Test App from Manu and Köbi") {
+   /* private final WDMF_Connector connector = new WDMF_Connector(this, "Test App from Manu and Köbi") {
         @Override
         public void onReceiveMessage(byte[] msg) {
             // Do nothing for now, calling it is not implemented yet anyway
         }
-    };
+    };*/
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,7 +60,7 @@ public class MainActivity extends AppCompatActivity  {
             }
         });
 
-        Button btn_send1 = (Button) findViewById(R.id.send1);
+        /*Button btn_send1 = (Button) findViewById(R.id.send1);
         btn_send1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -71,7 +75,7 @@ public class MainActivity extends AppCompatActivity  {
                 connector.setNetworkTag("New Name");
                 Log.d("XXXX", "Buffer Size:"  + connector.get_buffer_size() + "KB");
             }
-        });
+        });*/
         Button btn_settings = (Button) findViewById(R.id.settingsButton);
         btn_settings.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -97,13 +101,13 @@ public class MainActivity extends AppCompatActivity  {
 
     @Override
     protected void onStop() {
-        connector.disconnectFromWDMF();
+        //connector.disconnectFromWDMF();
         super.onStop();
     }
 
     @Override
     protected void onStart() {
-        connector.connectToWDMF();
+        //connector.connectToWDMF();
         super.onStart();
     }
 
@@ -112,12 +116,24 @@ public class MainActivity extends AppCompatActivity  {
         i.setComponent(new ComponentName("ch.ethz.inf.vs.a4.wdmf_api", "ch.ethz.inf.vs.a4.wdmf_api.service.MainService"));
 
         startService(i);
+        //connector.connectToWDMF();
     }
 
     void stopWDMFAPI(){
         Intent i = new Intent();
         i.setComponent(new ComponentName("ch.ethz.inf.vs.a4.wdmf_api", "ch.ethz.inf.vs.a4.wdmf_api.service.MainService"));
-        stopService(i); //TODO: make sure it really stops!
-    }
 
+        // make sure it really stops:
+        // send a start command telling the service to stop it ongoing work
+        // this is the very simplest way to communicate to the Service, binding to it is not possible
+        // anymore as soon as other clients have connected to the Messenger.
+        Intent stop = (Intent) i.clone();
+        stop.putExtra("stop", true);
+        startService(stop);
+
+        // stop started service,
+        // note: if other clients are still bound to it, it will not be destroyed, which also the
+        //       the reason why above command is necessary
+        stopService(i);
+    }
 }

@@ -2,6 +2,7 @@ package ch.ethz.inf.vs.a4.wdmf_api.ui;
 
 
 import android.annotation.TargetApi;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -33,6 +34,7 @@ import ch.ethz.inf.vs.a4.wdmf_api.service.MainService;
  * API Guide</a> for more information on developing a Settings UI.
  */
 public class SettingsActivity extends AppCompatPreferenceActivity {
+    private static Context context;
     /**
      * A preference value change listener that updates the preference's summary
      * to reflect its new value.
@@ -80,25 +82,19 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                     return false;
                 }
             }
-            /*else if (preference instanceof ListPreference) {
-                // For list preferences, look up the correct display value in
-                // the preference's 'entries' list.
-                ListPreference listPreference = (ListPreference) preference;
-                int index = listPreference.findIndexOfValue(stringValue);
-
-                // Set the summary to reflect the new value.
-                preference.setSummary(
-                        index >= 0
-                                ? listPreference.getEntries()[index]
-                                : null);
-
-            } */
             else {
                 // For all other preferences, set the summary to the value's
                 // simple string representation.
                 preference.setSummary(stringValue);
             }
-            //TODO: Call MainService.updateFromPreferences
+            // Call MainService.updateFromPreferences with a start command and the intent field set accordingly
+            // This is the very simplest way to communicate to the Service, binding to it is not possible
+            //  anymore as soon as other clients have connected to the Messenger.
+            Intent i = new Intent();
+            i.setComponent(new ComponentName("ch.ethz.inf.vs.a4.wdmf_api", "ch.ethz.inf.vs.a4.wdmf_api.service.MainService"));
+            i.putExtra("updatePrefs", true);
+            context.startService(i);
+
             return true;
         }
     };
@@ -144,6 +140,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        context = this;
         super.onCreate(savedInstanceState);
         setupActionBar();
     }

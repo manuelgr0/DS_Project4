@@ -3,8 +3,11 @@ package ch.ethz.inf.vs.a4.wdmf_api.service;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Message;
 import android.os.Messenger;
+import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.SparseArray;
@@ -13,8 +16,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import ch.ethz.inf.vs.a4.wdmf_api.io.Packet;
 import ch.ethz.inf.vs.a4.wdmf_api.ipc_interface.WDMF_Connector;
 import ch.ethz.inf.vs.a4.wdmf_api.R;
+import ch.ethz.inf.vs.a4.wdmf_api.local_data.EnumeratedMessage;
 import ch.ethz.inf.vs.a4.wdmf_api.local_data.MessageBuffer;
 import ch.ethz.inf.vs.a4.wdmf_api.local_data.NeighbourList;
 import ch.ethz.inf.vs.a4.wdmf_api.network_protocol_data.AckTable;
@@ -28,40 +33,81 @@ public class MainService extends Service {
 
     volatile private boolean dataChanged = false;
 
+    IncomingHandler handler = new IncomingHandler(this);
     // Target we publish for clients to send messages to IncomingHandler
-    private final Messenger receivingMessenger = new Messenger(new IncomingHandler(this));
+    private final Messenger receivingMessenger = new Messenger(handler);
     // To send the messages back according to the AppID
     SparseArray<Messenger> sendingMessengers = new SparseArray<>();
+
+    // Separate thread that connects to other devices and exchanges data
+    Thread mainLoop;
 
     // Configuration values
     long sleepTime = 5000; //5s
     long maxNoContactTime = 60000; //1 min
     long maxNoContactTimeForeignDevices = 60000; //1 min
     String networkName = "MyNetworkName";
+    String userID = "Name noe initialized";
     long maxBufferSize = 1000000;
     private volatile int timeout = 30*60; // TODO: use
     boolean prefsLocked = false;
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId){
+    public void onCreate(){
+        // TODO: get correct name in network (MAC address? Something unique that is easily visible for others)
+
+        userID = "Test Name " + new Date();
         updateFromPreferences();
         buffer = new MessageBuffer(networkName, 1000 * maxBufferSize);
-        // TODO: get correct name in network (MAC address? Something unique that is easily visible for others)
-        String myName = "Test Name " + new Date();
-        lcTable = new LCTable(myName);
-        ackTable = new AckTable(myName);
+        lcTable = new LCTable(userID);
+        ackTable = new AckTable(userID);
         neighbourhood = new NeighbourList();
+    }
 
-        //creating main loop thread
-        Thread mainLoop = new Thread() {
-            public void run() {
-                main();
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId){
+        if (intent.hasExtra("stop")){
+            if(mainLoop != null && mainLoop.isAlive()) {
+                mainLoop.interrupt();
             }
-        };
-        // start separate thread for the main loop
-        mainLoop.start();
+            else{
+                Log.d("MainService", "There is nothing to stop right now.");
+            }
+        }
+        else if (intent.hasExtra("updatePrefs")){
+            updateFromPreferences();
+        }
+        else {
+            updateFromPreferences();
 
+            // make sure old threads are dead
+            if (mainLoop != null && mainLoop.isAlive()) {
+                mainLoop.interrupt();
+            }
+
+            //creating main loop thread
+            mainLoop = new Thread() {
+                public void run() {
+                    main();
+                }
+            };
+            // start separate thread for the main loop
+            mainLoop.start();
+        }
         return START_STICKY;
+
+    }
+
+    @Override
+    public void onDestroy(){
+        this.stop();
+        super.onDestroy();
+    }
+
+    public void stop(){
+        if(mainLoop != null) {
+            mainLoop.interrupt();
+        }
     }
 
     // main loop
@@ -84,14 +130,14 @@ public class MainService extends Service {
                         // or otherwise check when we've had contact with him last time
                         if (buffer.hasMessagesForReceiver(neighbour, ackTable)
                                 || lcTable.entryIsOlderThan(neighbour, (new Date()).getTime() - maxNoContactTime)) {
-                            establishConnection(neighbour);
+                            syncPeerToPeer(neighbour);
                         }
                     } else {
                         Date lastTry = neighbourhood.last_contact(neighbour);
                         Date threshold = new Date(System.currentTimeMillis() - maxNoContactTimeForeignDevices);
                         // Contact node if we haven't done so already recently
                         if (lastTry != null && lastTry.after(threshold)) {
-                            establishConnection(neighbour);
+                            syncPeerToPeer(neighbour);
                             neighbourhood.update_neighbour(neighbour);
                         }
                     }
@@ -103,22 +149,147 @@ public class MainService extends Service {
             Log.d("Main Loop", "Execution time for one iteration: " + executionTime + "ms");
             try{
                 synchronized (buffer) {
-                    // Spin in case we are nwoken up for wrong reasons
+                    // Spin in case we are woken up for wrong reasons
                     while(!dataChanged && (new Date()).getTime() < start + sleepTime){
                         buffer.wait(sleepTime - executionTime);
                     }
                     dataChanged = false;
                 }
             } catch (InterruptedException e){
-                e.printStackTrace();
-                break;
+                Log.d("Main Service", "Stopping main Loop");
+                return;
             }
         }
     }
 
     // Initiate connection to exchange tables and messages
-    private void establishConnection(String neighbour){
-        // TODO :)
+    private void syncPeerToPeer(String neighbour){
+        // TODO: wifiSend and wifiBlockingReceive:)
+        // TODO: detect if other nodes think we got message already (msg has been dropped)
+        //       Note that the las point is quite important for the case where a node goes offline
+        //       for some time and joins the network again, but also just for joining a network late,
+        //       if you don't do that it will wait for seq 0 forever...
+
+
+        /*   I assume the following behaviour of the Wifi IO backend:
+        *
+        *   void wifiSend(String node); Sends data non-blocking to the node
+        *
+        *   boolean wifiBlockingReceive(String node); blocks until the full data from the other node
+        *    has arrived. If the connection fails, or when a timeout occurs, it will return false.
+        *
+        *   Of course this could be implemented differently, this is just an idea! But fot my
+        *   code to work it should probably be similar to that idea, at least. But I don't know
+        *   how it will look like, maybe we also have to call something like connect(neighbour)
+        *   first and close() to have a persistent connection, I guess we don't want to build up
+        *   the entire connection each time.
+        */
+        String TAG = ("ConEstbl " + neighbour).substring(23);
+
+
+        // 1. Try to merge network
+        //  Hidden inside of exchangeTables:
+        //  1.1 Send my LC-/ACK-table and wait for answer
+        //  1.2 Check if network tags match
+        //  1.3. Merge LC-/Ack-table
+        Log.d(TAG, "Merge network");
+        if(!exchangeTables(neighbour)){
+            connectionFailed(neighbour);
+            Log.d(TAG, "Network merge failed");
+            return;
+        }
+
+        Log.d(TAG, "Network merge successful. Exchange buffer data next.");
+
+        // 2. Send data from buffer
+        Packet myData = new Packet(
+                buffer.getEnumeratedMessagesForReceiver(
+                        neighbour,
+                        ackTable
+                )
+        );
+//UNCOMMENT when done        wifiSend(neighbour, myData.getRawData());
+
+        // 3. Receive data, unpack it and store it
+        byte[] answerRawData = new byte[0];
+//UNCOMMENT when done        byte[] answerRawData = wifiBlockingReceive(neighbour); // might fail => return in that case
+        Packet theirData = new Packet(answerRawData);
+        Log.d(TAG, "Buffer data exchange successful, applying data now.");
+        for (byte[] message : theirData.getMessageContents()) {
+            // unpack and store hidden in MessageBuffer class
+            buffer.addRawEnumeratedMessage(message);
+        }
+        // 4. Delivery
+
+        // If the client-message is one we have been waiting for (EXACT sequence number),
+        // only then we want to deliver it to the client apps and update the ACK-table.
+        // Otherwise we have to wait with the delivery to ensure the correct order of messages
+        // and the ACK-table can only store "everything before N has been received" anyway.
+        // On the other hand, if we can deliver one client-message, we should also check the
+        // local buffer for successor client-messages.
+
+        for(int i = 0; i < sendingMessengers.size(); i++)
+        {
+            int appId = sendingMessengers.keyAt(i);
+            Messenger client = sendingMessengers.get(appId);
+
+            // buffer.getMessagesReadyForDelivery does all the hard work for us to:
+            // - find the messages that can be delivered now
+            // - order them correctly
+            // - compute the new sequence numbers and directly update them in the ACK-table
+            ArrayList<byte[]> deliveryData = buffer.getMessagesReadyForDelivery(appId, ackTable);
+
+            if (deliveryData.size() > 0) {
+                // Note: This is an Android IPC Message, nothing to do with our custom messages that we flood
+                Message delivery = Message.obtain(null, WDMF_Connector.IPC_MSG_SEND_MESSAGE_LIST, appId, 0);
+                Bundle b = new Bundle();
+                b.putSerializable("dataList", deliveryData);
+                delivery.setData(b);
+                try {
+                    client.send(delivery);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        // 5. Update Ack-table with neighbour
+        //   We have to exchange the ACK-tables again here, in that way we even
+        //   catch all errors that happened on the way and all cascaded ACKs
+        //   from locally buffered messages with higher sequence number.
+        Log.d(TAG, "Finished applying data, exchange ACK-table again to finish the connection.");
+        exchangeTables(neighbour);
+
+    }
+
+    // merges tables with specified neighbour
+    // returns true iff network tags matched and merge was successful
+    private boolean exchangeTables(String neighbour){
+        String TAG = ("exchangeTables " + neighbour).substring(23);
+        //  Send my LC-/ACK-table and wait for answer
+        Packet myTables = new Packet(networkName, lcTable, ackTable);
+//UNCOMMENT when done        wifiSend(neighbour, myTables.getRawData());
+
+        byte[] answer = new byte[0];
+//UNCOMMENT when done        byte[] answer = wifiBlockingReceive(neighbour); //return false on timeout
+        Packet theirTables =  new Packet(answer);
+
+        //  Check if network tags match
+        if (!theirTables.getNetworkID().equals(networkName)){
+            Log.d(TAG, "networks don't match");
+            return false;
+        }
+        //  Merge LC-/Ack-table
+        lcTable.merge(neighbour, theirTables.getLCTable());
+        ackTable.merge(theirTables.getAckTable());
+        return true;
+    }
+
+    // Adds the neigbour to the list of "foreign devices" <=> neighbour type 2
+    // In that way we will retry after some time, but we will not try each iterations
+    // even if a device stopped the app using our API.
+    private void connectionFailed(String neighbour){
+        neighbourhood.update_neighbour(neighbour);
     }
 
     public void updateFromPreferences(){
@@ -174,8 +345,10 @@ public class MainService extends Service {
     public void updateTimeout(int newTimeout){
         timeout = newTimeout;
     }
+
     /**
-     * When binding to the service, we return an interface to our messenger
+     * When binding to the service from a connector,
+     * we return an interface to our messenger
      * for sending messages to the service.
      */
     @Override
@@ -190,5 +363,18 @@ public class MainService extends Service {
             buffer.notify();
         }
     }
+
+    /**
+     * Class for direct access from our own Activitiy, not from the connector.
+     * Because here we know this service always runs in the same process as the
+     * single client connecting in this way, we don't need to deal with IPC here.
+     *
+     * We need this so we can call stop() from the MainActivity.
+     */
+    //public class LocalBinder extends Binder {
+    //   public MainService getService() {
+    //        return MainService.this;
+    //    }
+    //}
 
 }

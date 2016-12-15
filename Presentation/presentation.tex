@@ -1,0 +1,79 @@
+\documentclass[11pt]{beamer}
+\usetheme{default}
+
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+
+
+\author{Joel Busch, Manuel Grossmann, Claude Hähni, Jakob Meier, Alessandro Nicolusi, Pascal Oberholzer}
+
+\title{Presentation WDMF API}
+
+\subtitle{WiFiDirect-Message-Flooding-API}
+
+\logo{}
+
+\institute{}
+
+\date{}
+
+\subject{}
+
+\setbeamercovered{transparent}
+
+\setbeamertemplate{navigation symbols}{}
+
+\begin{document}
+	\maketitle
+	
+	\begin{frame}
+		\frametitle{We can what others can't!}
+		\begin{itemize}
+			\item Everybody knows the moment when we would like to send a message but our mobile-phone has no connection.
+			\item Sometimes it can save life if we could send a help message to the ambulance station even if we have no connection (for example on a mountain while skiing).
+		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}
+		\frametitle{What we thought}
+		\begin{itemize}
+			\item Each phone has Bluetooth and WIFI which is often not in use if there is no antenna within reach.
+			\item WIFI has a bigger reach than Bluetooth $ \rightarrow $ WIFI is more capable than Bluetooth
+			\item Address as many programmers as possible to use our idea:\\
+				more users $ \rightarrow $ higher probability to have someone in reach who uses the same "network"
+		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}
+		\frametitle{What we have created}
+		\begin{itemize}
+			\item API to address as many programmers as possible
+			\item Emergency app to show a simple example that our API works and what serious problems we can solve.
+			\item Chat app to show an other scope of application.
+		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}
+		\frametitle{API}
+		content...
+	\end{frame}
+	
+	\begin{frame}
+		\frametitle{Emergency app}
+		content...
+	\end{frame}
+	
+	\begin{frame}
+		\frametitle{Chat app}
+		\begin{itemize}
+			\item Send simple text messages to one other person.
+			\item Asynchronous key pair (public and private key) to guarantee end-to-end encryption
+			\item All information (name, id, public key) of a person are shared via QR-codes. (Both have to share the id and the key to write to the other)
+		\end{itemize}
+	\end{frame}
+	
+\end{document}

@@ -11,17 +11,22 @@ import android.util.Log;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 
 import ch.ethz.inf.vs.a4.wdmf_api.ipc_interface.WDMF_Connector;
 
 /**
  * Handler of incoming messages from clients.
  */
-class IncomingHandler extends Handler {
+public class IncomingHandler extends Handler {
     private MainService mainService;
 
     public IncomingHandler(MainService mainService) {
         this.mainService = mainService;
+    }
+
+    public MainService getService(){
+        return mainService;
     }
 
     @Override
@@ -38,7 +43,16 @@ class IncomingHandler extends Handler {
                 if( data != null) {
 
                     // HACK: Wait for onCreate to finish
-                    while(mainService.buffer == null);
+                    long timeout = new Date().getTime() + 3000; //3s timeout
+                    while(mainService.buffer == null){
+                        if(timeout < new Date().getTime()){
+                            Log.e("Incoming Handler", "Timeout while waiting for the local message buffer to be initialised.");
+                            return;
+                        }
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {e.printStackTrace();}
+                    }
 
                     synchronized (mainService.buffer){
                         mainService.buffer.addLocalMessage(data, msg.arg1);
@@ -146,5 +160,8 @@ class IncomingHandler extends Handler {
                 }
             }
         }
+    }
+    public String toString(){
+        return super.toString() + "   -   My Incoming Handler" ;
     }
 }
