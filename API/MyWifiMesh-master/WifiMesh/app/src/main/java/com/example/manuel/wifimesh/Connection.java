@@ -236,7 +236,40 @@ public class Connection {
                 e.printStackTrace();
             }
         }
+
+        if(mWifiConnection != null) {
+            mWifiConnection.Stop();
+            mWifiConnection = null;
+        }
+        if(mWifiAccessPoint != null){
+            mWifiAccessPoint.Stop();
+            mWifiAccessPoint = null;
+        }
+
+        if(mWifiServiceSearcher != null){
+            mWifiServiceSearcher.Stop();
+            mWifiServiceSearcher = null;
+        }
+        if(clientSocket != null) {
+            try {
+                clientSocket.close_socket();
+                clientSocket = null;
+                Log.d("Closing", "ClientSocket closed");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if(groupSocket != null) {
+            try {
+                groupSocket.close_socket();
+                groupSocket = null;
+                Log.d("Closing", "ServerSocket closed");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         LocalBroadcastManager.getInstance(context).unregisterReceiver(mBRReceiver);
+
         Log.d("Closing", "  COMPLETE!!");
     }
 
