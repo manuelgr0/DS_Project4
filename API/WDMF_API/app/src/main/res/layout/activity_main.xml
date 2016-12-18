@@ -13,16 +13,17 @@
     tools:context="ch.ethz.inf.vs.a4.wdmf_api.ui.MainActivity">
 
 
-    <ImageButton
+    <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app2:srcCompat="@android:drawable/ic_lock_power_off"
         android:id="@+id/startButton"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
         android:layout_above="@+id/textView"
-        style="@android:style/Widget.ImageButton" />
+        style="@android:style/Widget.ImageButton"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true" />
 
     <Button
         android:text="settings"
@@ -32,7 +33,9 @@
         style="@style/Widget.AppCompat.Button"
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true" />
 
     <TextView
         android:text="Off"
@@ -44,6 +47,8 @@
         android:textSize="36sp"
         android:layout_above="@+id/settingsButton"
         android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentLeft="true" />
 
 </RelativeLayout>
