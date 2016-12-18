@@ -73,10 +73,16 @@ public class MainActivity extends AppCompatActivity {
                     Object obj = msg.obj;
                     chat = (ChatManager) obj;
 
-                    String helloBuffer = "Hello There from " +  chat.getSide() + " :" + Build.VERSION.SDK_INT + "Groupowner is " + SSID;
+                    //String helloBuffer = "Hello There from " +  chat.getSide() + " :" + Build.VERSION.SDK_INT + "Groupowner is " + SSID;
 
-                    chat.write(helloBuffer.getBytes());
-                    Log.d("","Wrote message: " + helloBuffer);
+                    //chat.write(helloBuffer.getBytes());
+                    if (chat.type == 0) {
+                        String helloBuffer = "Hello There from " +  chat.getSide() + " :" + Build.VERSION.SDK_INT + "Groupowner is " + SSID;
+
+                        chat.write(helloBuffer.getBytes());
+                    } else
+                        chat.write(chat.getMsg());
+                    //Log.d("","Wrote message: " + new String(chat.getMsg()));
             }
         }
     };
@@ -190,18 +196,7 @@ public class MainActivity extends AppCompatActivity {
         button4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
-                String ip = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
-                Log.d("Sender ip is:", ip);
-                //if(mWifiConnection.GetInetAddress() == ip){
-                if (mWifiConnection == null) {
-                    Log.d("status", "................group owner");
-                    chat = new ChatManager(groupSocket.s, myHandler, "Group!!!!!");
-                    new Thread(chat).start();
-                } else {
-                    chat = new ChatManager(clientSocket.socket, myHandler, "Client!!!!");
-                    new Thread(chat).start();
-                }
+                send("Test".getBytes());
             }
         });
 
@@ -246,6 +241,7 @@ public class MainActivity extends AppCompatActivity {
 
         WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
         wifiManager.setWifiEnabled(false);
+
         wifiManager.setWifiEnabled(true);
 
         mBRReceiver = new MainBCReceiver();
@@ -272,6 +268,23 @@ public class MainActivity extends AppCompatActivity {
         }catch (Exception e){
             Log.d("", "groupseocket error, :" + e.toString());
         }*/
+    }
+
+    public void send(byte[] msg) {
+        WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+        String ip = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
+        Log.d("Sender ip is:", ip);
+        //if(mWifiConnection.GetInetAddress() == ip){
+        if (mWifiConnection == null) {
+            Log.d("status", "................group owner");
+            //chat = new ChatManager(groupSocket.s, myHandler, "Group!!!!!");
+            chat = new ChatManager(groupSocket.s, myHandler, msg);
+            new Thread(chat).start();
+        } else {
+            //chat = new ChatManager(clientSocket.socket, myHandler, "Client!!!!");
+            chat = new ChatManager(clientSocket.socket, myHandler, msg);
+            new Thread(chat).start();
+        }
     }
 
     @Override
