@@ -15,7 +15,6 @@ import java.net.Socket;
 /**
  * Created by Jakob on 17.12.2016.
  */
-
 public class DataExchanger extends BroadcastReceiver {
     private enum Role {None, Server, Client};
     private Role role = Role.None;

@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -22,6 +23,7 @@ import android.widget.TextView;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -69,5 +71,18 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         button4.setText("Close connection");
+
+
+        Button btnPeers = (Button) findViewById(R.id.btnPeers);
+        final TextView txtPeers = (TextView) findViewById(R.id.txtPeers);
+        btnPeers.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                conn.discoverp();
+                List peers = conn.updatepeer();
+                txtPeers.setText(peers.toString());
+            }
+        });
     }
 }

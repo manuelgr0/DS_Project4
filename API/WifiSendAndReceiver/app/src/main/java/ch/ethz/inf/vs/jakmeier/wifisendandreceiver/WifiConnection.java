@@ -49,9 +49,7 @@ public class WifiConnection {
     WiFiConnectionReceiver receiver;
     private IntentFilter filter;
 
-    String intetAddress = "";
-
-    public WifiConnection(Context Context, String SSIS, String password, String ipAddr) {
+    public WifiConnection(Context Context, String SSIS, String password) {
         this.context = Context;
 
         broadcaster = LocalBroadcastManager.getInstance(this.context);
@@ -80,18 +78,20 @@ public class WifiConnection {
         this.wifiManager.disconnect();
     }
 
-    public void SetInetAddress(String address){
-        this.intetAddress = address;
-    }
-
-    public String GetInetAddress(){
-        return this.intetAddress;
-    }
-
     private class WiFiConnectionReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
+<<<<<<< Updated upstream
+=======
+            Log.d("WifiConnection", "OnReceive: " + intent);
+            Log.d("WifiConnection", "Extra: " + Arrays.toString(intent.getExtras().keySet().toArray()));
+            try {
+                for (String key : intent.getExtras().keySet()) {
+                    Log.d("WifiConnection", key + " " + intent.getParcelableExtra(key));
+                }
+            }catch (Exception e) {e.printStackTrace();}
+>>>>>>> Stashed changes
 
             String action = intent.getAction();
             if (WifiManager.NETWORK_STATE_CHANGED_ACTION.equals(action)) {
@@ -136,6 +136,7 @@ public class WifiConnection {
                         Intent snInt = new Intent(DSS_WIFICON_SERVERADDRESS);
                         intetAddress = Formatter.formatIpAddress(wiffo.getIpAddress());
                         snInt.putExtra(DSS_WIFICON_INETADDRESS, wiffo.getIpAddress());
+                        Log.d("WifiConnection", "\n\n My IP address: " + Formatter.formatIpAddress(wiffo.getIpAddress()) + "\n\n");
                         broadcaster.sendBroadcast(snInt);
                     }
 

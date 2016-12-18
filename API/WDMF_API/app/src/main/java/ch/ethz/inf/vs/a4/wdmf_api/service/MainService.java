@@ -17,6 +17,7 @@ import java.util.Date;
 import java.util.List;
 
 import ch.ethz.inf.vs.a4.wdmf_api.io.Packet;
+import ch.ethz.inf.vs.a4.wdmf_api.io.WifiBackend;
 import ch.ethz.inf.vs.a4.wdmf_api.ipc_interface.WDMF_Connector;
 import ch.ethz.inf.vs.a4.wdmf_api.R;
 import ch.ethz.inf.vs.a4.wdmf_api.local_data.MessageBuffer;
@@ -46,8 +47,9 @@ public class MainService extends Service {
     long maxNoContactTime = 60000; //1 min
     long maxNoContactTimeForeignDevices = 60000; //1 min
     String networkName = "MyNetworkName";
-    String userID = "Name noe initialized";
+    String userID = "Name not initialized";
     long maxBufferSize = 1000000;
+    public static  long WIFI_RECEIVE_TIMEOUT = 2000;
     public static volatile int timeout = 30*60*1000;
     boolean prefsLocked = false;
     static int MAX_REORDERING = 8;
@@ -116,29 +118,47 @@ public class MainService extends Service {
         while(true){
             start = new Date().getTime();
 
-            // TODO
             // get currently visible devices
-            List<String> deviceIdentifier = new ArrayList<>();
+            List<String> deviceIdentifier = WifiBackend.getNeighbourhood();
 
             // Go through visible devices to contact them if necessary
-            for (String neighbour : deviceIdentifier){
-                // lock buffer because IPC messages will be handled by another thread
-                synchronized (buffer) {
-                    // Check if the node is in the network
-                    if (lcTable.hasKey(neighbour)) {
-                        // See if we have new data for the node, according to our ACK table,
-                        // or otherwise check when we've had contact with him last time
-                        if (buffer.hasMessagesForReceiver(neighbour)
-                                || lcTable.entryIsOlderThan(neighbour, (new Date()).getTime() - maxNoContactTime)) {
-                            syncPeerToPeer(neighbour);
+            if(deviceIdentifier != null) {
+                for (String neighbour : deviceIdentifier) {
+                    // lock buffer because IPC messages will be handled by another thread
+                    synchronized (buffer) {
+                        // First check if someone is already trying to connect to us
+                        while (WifiBackend.incommingConnectionRequestWaiting()) {
+                            syncPeerToPeer();
                         }
-                    } else {
-                        Date lastTry = neighbourhood.last_contact(neighbour);
-                        Date threshold = new Date(System.currentTimeMillis() - maxNoContactTimeForeignDevices);
-                        // Contact node if we haven't done so already recently
-                        if (lastTry != null && lastTry.after(threshold)) {
-                            syncPeerToPeer(neighbour);
-                            neighbourhood.update_neighbour(neighbour);
+
+                        // Check if the node is in the network
+                        if (lcTable.hasKey(neighbour)) {
+                            // See if we have new data for the node, according to our ACK table,
+                            // or otherwise check when we've had contact with him last time
+                            if (buffer.hasMessagesForReceiver(neighbour)
+                                    || lcTable.entryIsOlderThan(neighbour, (new Date()).getTime() - maxNoContactTime)) {
+                                try {
+                                    WifiBackend.connectTo(neighbour);
+                                    syncPeerToPeer();
+                                } catch (Exception e) {
+                                    // try next neighbour
+                                    continue;
+                                }
+                            }
+                        } else {
+                            Date lastTry = neighbourhood.last_contact(neighbour);
+                            Date threshold = new Date(System.currentTimeMillis() - maxNoContactTimeForeignDevices);
+                            // Contact node if we haven't done so already recently
+                            if (lastTry != null && lastTry.after(threshold)) {
+                                try {
+                                    WifiBackend.connectTo(neighbour);
+                                    syncPeerToPeer();
+                                } catch (Exception e) {
+                                    // try next neighbour
+                                    continue;
+                                }
+                                neighbourhood.update_neighbour(neighbour);
+                            }
                         }
                     }
                 }
@@ -171,24 +191,8 @@ public class MainService extends Service {
     }
 
     // Initiate connection to exchange tables and messages
-    private void syncPeerToPeer(String neighbour){
-        // TODO: wifiSend and wifiBlockingReceive:)
-
-
-
-        /*   I assume the following behaviour of the Wifi IO backend:
-        *
-        *   void wifiSend(String node); Sends data non-blocking to the node
-        *
-        *   boolean wifiBlockingReceive(String node); blocks until the full data from the other node
-        *    has arrived. If the connection fails, or when a timeout occurs, it will return false.
-        *
-        *   Of course this could be implemented differently, this is just an idea! But for my
-        *   code to work it should probably be similar to that idea, at least. But I don't know
-        *   how it will look like, maybe we also have to call something like connect(neighbour)
-        *   first and close() to have a persistent connection, I guess we don't want to build up
-        *   the entire connection each time.
-        */
+    private void syncPeerToPeer(){
+        String neighbour = WifiBackend.getOtherMacAddress();
         String TAG = ("ConEstbl " + neighbour).substring(23);
 
 
@@ -198,9 +202,9 @@ public class MainService extends Service {
         //  1.2 Check if network tags match
         //  1.3. Merge LC-/Ack-table
         Log.d(TAG, "Merge network");
-        if(!exchangeTables(neighbour)){
-            connectionFailed(neighbour);
+        if(!exchangeTables()){
             Log.d(TAG, "Network merge failed");
+            WifiBackend.close();
             return;
         }
 
@@ -210,11 +214,22 @@ public class MainService extends Service {
         Packet myData = new Packet(
                 buffer.getEnumeratedMessagesForReceiver(neighbour)
         );
-//UNCOMMENT when done        wifiSend(neighbour, myData.getRawData());
+
+        try {
+            WifiBackend.send(myData.getRawData());
+        } catch (Exception e){
+            // Problem with wifi backend, abort for now and then try again in the next iteration
+            WifiBackend.close();
+            Log.d(TAG, "Sending my data to " + neighbour + " failed. :(");
+        }
 
         // 3. Receive data, unpack it and store it
-        byte[] answerRawData = new byte[0];
-//UNCOMMENT when done        byte[] answerRawData = wifiBlockingReceive(neighbour); // might fail => return in that case
+        byte[] answerRawData = WifiBackend.waitForReceive(neighbour);
+        // might fail => return in that case and try again in the next iteration
+        if(answerRawData == null) {
+            WifiBackend.close();
+            return;
+        }
         Packet theirData = new Packet(answerRawData);
         Log.d(TAG, "Buffer data exchange successful, applying data now.");
         for (byte[] message : theirData.getMessageContents()) {
@@ -261,26 +276,41 @@ public class MainService extends Service {
         //   We have to exchange the ACK-tables again here, in that way we even
         //   catch all errors that happened on the way and all cascaded ACKs
         //   from locally buffered messages with higher sequence number.
-        Log.d(TAG, "Finished applying data, exchange ACK-table again to finish the connection.");
-        exchangeTables(neighbour);
 
+        Log.d(TAG, "Finished applying data, exchange ACK-table again to finish the connection.");
+
+        // This migh return false, but if we fail here, we don't really care and proceed just in the same way
+        exchangeTables();
+        WifiBackend.close();
     }
 
     // merges tables with specified neighbour
     // returns true iff network tags matched and merge was successful
-    private boolean exchangeTables(String neighbour){
+    private boolean exchangeTables(){
+        String neighbour = WifiBackend.getOtherMacAddress();
         String TAG = ("exchangeTables " + neighbour).substring(23);
         //  Send my LC-/ACK-table and wait for answer
         Packet myTables = new Packet(networkName, lcTable, ackTable);
-//UNCOMMENT when done        wifiSend(neighbour, myTables.getRawData());
+        try {
+            WifiBackend.send(myTables.getRawData());
+        } catch (Exception e){
+            Log.d(TAG, "Sending tables failed :(");
+            return false;
+        }
 
-        byte[] answer = new byte[0];
-//UNCOMMENT when done        byte[] answer = wifiBlockingReceive(neighbour); //return false on timeout
+        byte[] answer = WifiBackend.waitForReceive(neighbour);
+        if(answer == null){ return false; }
+
+        //return false on timeout
+        if(answer == null){ return false; }
+
         Packet theirTables =  new Packet(answer);
 
         //  Check if network tags match
         if (!theirTables.getNetworkID().equals(networkName)){
             Log.d(TAG, "networks don't match");
+            // make sure we don't try to connect again too soon
+            addForeignDevice(neighbour);
             return false;
         }
 
@@ -307,7 +337,7 @@ public class MainService extends Service {
     // Adds the neighbour to the list of "foreign devices" <=> neighbour type 2
     // In that way we will retry after some time, but we will not try each iterations
     // even if a device stopped the app using our API.
-    private void connectionFailed(String neighbour){
+    private void addForeignDevice(String neighbour){
         neighbourhood.update_neighbour(neighbour);
     }
 
