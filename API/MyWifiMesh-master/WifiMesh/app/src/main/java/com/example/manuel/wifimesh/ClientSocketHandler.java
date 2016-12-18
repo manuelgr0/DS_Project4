@@ -38,7 +38,6 @@ public class  ClientSocketHandler extends Thread {
         socket = new Socket();
         try {
             socket.bind(null);
-            Log.d(TAG, "Client socket is bound to local IP: " + socket.getLocalAddress().toString());
             Log.d("kkkkkkkkkkkkkk","kkkkkkkkkkkkk" + mAddress);
             socket.connect(new InetSocketAddress(mAddress,mPort), 5000);
             Log.d(TAG, "Launching the I/O handler");
