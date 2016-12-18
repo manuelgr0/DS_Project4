@@ -206,7 +206,35 @@ public class WifiServiceSearcher  implements WifiP2pManager.ChannelListener{
                             }
 
                             public void onFailure(int reason) {
-                                Log.d(TAG, "Starting service discovery failed, error code " + reason);
+                                if (reason == WifiP2pManager.NO_SERVICE_REQUESTS) {
+                                    Log.d("-------","-------------------------------------------------------");
+
+                                    // initiate a stop on service discovery
+                                    p2p.stopPeerDiscovery(channel, new WifiP2pManager.ActionListener() {
+                                        @Override
+                                        public void onSuccess() {
+                                            // initiate clearing of the all service requests
+                                            p2p.clearServiceRequests(channel, new WifiP2pManager.ActionListener() {
+                                                @Override
+                                                public void onSuccess() {
+                                                    // reset the service listeners, service requests, and discovery
+                                                    repeatingServiceDiscoveryPart();
+                                                }
+
+                                                @Override
+                                                public void onFailure(int i) {
+                                                    Log.d(TAG, "FAILED to clear service requests ");
+                                                }
+                                            });
+
+                                        }
+
+                                        @Override
+                                        public void onFailure(int i) {
+                                            Log.d(TAG, "FAILED to stop discovery");
+                                        }
+                                    });
+                                }
                             }
                         });
                     }
