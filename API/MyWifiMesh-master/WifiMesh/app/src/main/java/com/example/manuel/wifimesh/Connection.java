@@ -217,9 +217,9 @@ public class Connection {
                 Log.d("Closing", "  COMPLETE!!");
             }
         });
-        */
 
-    @Override
+
+
     public void onDestroy() {
         super.onDestroy();
         if(mWifiConnection != null) {
@@ -238,6 +238,8 @@ public class Connection {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mBRReceiver);
     }
 
+    */
+
     private class MainBCReceiver extends BroadcastReceiver {
 
         @Override
@@ -249,7 +251,6 @@ public class Connection {
 
                 separated = s.split(":");
                 Log.d("SS", "found SSID:" + separated[1] + ", pwd:"  + separated[2]+ "IP: " + separated[3]);
-                ((TextView) findViewById(R.id.textView2)).setText("found SSID:" + separated[1] + ", pwd:"  + separated[2]);
                 SSID = separated[1];
 
                 if(mWifiConnection == null) {
@@ -267,25 +268,27 @@ public class Connection {
                     final String ipAddress   = separated[3];
                     final String mMACAddress = separated[4];
 
-                    WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+                    WifiManager wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
                     wifi.disconnect();
 
-                    WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+                    WifiManager wm = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
                     List<WifiConfiguration> list = wm.getConfiguredNetworks();
                     for( WifiConfiguration i : list ) {
                         wm.removeNetwork(i.networkId);
                         wm.saveConfiguration();
                     }
 
-                    WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+                    WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
                     WifiInfo wInfo = wifiManager.getConnectionInfo();
                     String macAddress = wInfo.getMacAddress();
 
                     Log.d("Connection ", "Try to connect............." + ipAddress);
-                    if(mMACAddress == macAddress) {
+                    if(mMACAddress.equals(macAddress)) {
                         Log.d("Right MAC    ", "YAAAAAAAAYYYYYY");
                         mWifiConnection = new WifiConnection(that, networkSSID, networkPass);
                         mWifiConnection.SetInetAddress(ipAddress);
+                    } else {
+                        Log.d("WRRRROOOOOONNNG   ", "MAAAAAC")
                     }
                 }
 
