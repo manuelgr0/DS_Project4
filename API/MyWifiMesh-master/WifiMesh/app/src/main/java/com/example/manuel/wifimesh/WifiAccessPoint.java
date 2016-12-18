@@ -132,7 +132,8 @@ public class WifiAccessPoint implements WifiP2pManager.ConnectionInfoListener,Wi
 
                 mNetworkName = group.getNetworkName();
                 mPassphrase = group.getPassphrase();
-                startLocalService("NI:" + group.getNetworkName() + ":" + group.getPassphrase() + ":" + mInetAddress + ":" + mMACAddress);
+                //startLocalService("NI:" + group.getNetworkName() + ":" + group.getPassphrase() + ":" + mInetAddress + ":" + mMACAddress);
+                startLocalService(mMACAddress + ":" + group.getNetworkName() + ":" + group.getPassphrase() + ":" + mInetAddress);
             }
         } catch(Exception e) {
             Log.d(TAG, "onGroupInfoAvailable, error: " + e.toString());
