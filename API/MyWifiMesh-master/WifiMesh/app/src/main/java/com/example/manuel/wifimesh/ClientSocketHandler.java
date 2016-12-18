@@ -38,7 +38,9 @@ public class  ClientSocketHandler extends Thread {
         socket = new Socket();
         try {
             socket.bind(null);
+            Log.d(TAG, "Client socket is bound to local IP: " + socket.getLocalAddress().toString());
             Log.d("kkkkkkkkkkkkkk","kkkkkkkkkkkkk" + mAddress);
+            Log.d(TAG, "Client socket will try to connect to remote IP: " + mAddress);
             socket.connect(new InetSocketAddress(mAddress,mPort));
             Log.d(TAG, "Launching the I/O handler");
             chat = new ChatManager(socket, handler, "Client");
