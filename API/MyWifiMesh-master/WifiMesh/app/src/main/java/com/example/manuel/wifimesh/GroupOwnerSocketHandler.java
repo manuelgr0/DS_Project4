@@ -56,15 +56,12 @@ public class GroupOwnerSocketHandler extends Thread {
      */
     @Override
     public void run() {
-        while (true) {
+        //while (true) {
             try {
                 // A blocking operation. Initiate a ChatManager instance when
                 // there is a new connection
                 s = socket.accept();
-                Log.d(TAG, "Server socket got a connection from remote IP: " + s.getInetAddress().toString());
                 Log.d(TAG, "Launching the Group I/O handler");
-                chat = new ChatManager(s, handler, "Group");
-                new Thread(chat).start();
 
             } catch (Exception e) {
                 try {
@@ -83,9 +80,9 @@ public class GroupOwnerSocketHandler extends Thread {
                     broadcaster.sendBroadcast(intent);
                 }
 
-                break;
+                //break;
             }
-        }
+        //}
     }
 
     public void close_socket() throws IOException {

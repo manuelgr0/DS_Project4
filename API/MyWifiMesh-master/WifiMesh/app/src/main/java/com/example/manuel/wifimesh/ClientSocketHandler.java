@@ -41,8 +41,6 @@ public class  ClientSocketHandler extends Thread {
             Log.d("kkkkkkkkkkkkkk","kkkkkkkkkkkkk" + mAddress);
             socket.connect(new InetSocketAddress(mAddress,mPort), 5000);
             Log.d(TAG, "Launching the I/O handler");
-            chat = new ChatManager(socket, handler, "Client");
-            new Thread(chat).start();
             socket_connected = true;
         } catch (Exception e) {
             if(broadcaster != null) {
@@ -61,6 +59,7 @@ public class  ClientSocketHandler extends Thread {
             }
             return;
         }
+        //TODO: Callback for Köbi
     }
 
     public void close_socket() throws IOException {
