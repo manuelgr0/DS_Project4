@@ -20,7 +20,12 @@ public class LCTable {
     }
 
     public long getLastContactTimestamp(String node){
-        return hash.get(node);
+        if (hash.containsKey(node)) {
+            return hash.get(node);
+        }
+        else {
+            return 0;
+        }
     }
 
     public Set<String> getNodeSet(){
