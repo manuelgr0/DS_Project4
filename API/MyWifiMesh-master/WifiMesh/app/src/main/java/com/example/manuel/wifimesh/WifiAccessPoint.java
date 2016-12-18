@@ -43,15 +43,17 @@ public class WifiAccessPoint implements WifiP2pManager.ConnectionInfoListener,Wi
     String mNetworkName = "";
     String mPassphrase = "";
     String mInetAddress = "";
+    String mMACAddress = "";
 
     String TAG = "WifiAccessPoint";
 
     private BroadcastReceiver receiver;
     private IntentFilter filter;
 
-    public WifiAccessPoint(Context Context) {
+    public WifiAccessPoint(Context Context, String mMACAddress) {
         this.context = Context;
         this.broadcaster = LocalBroadcastManager.getInstance(this.context);
+        this.mMACAddress = mMACAddress;
     }
 
     public void Start() {
@@ -130,7 +132,7 @@ public class WifiAccessPoint implements WifiP2pManager.ConnectionInfoListener,Wi
 
                 mNetworkName = group.getNetworkName();
                 mPassphrase = group.getPassphrase();
-                startLocalService("NI:" + group.getNetworkName() + ":" + group.getPassphrase() + ":" + mInetAddress);
+                startLocalService("NI:" + group.getNetworkName() + ":" + group.getPassphrase() + ":" + mInetAddress + ":" + mMACAddress);
             }
         } catch(Exception e) {
             Log.d(TAG, "onGroupInfoAvailable, error: " + e.toString());

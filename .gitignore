@@ -67,3 +67,6 @@ captures/
 *.mtc1
 *.out
 *.synctex.gz
+
+#----------------macOS
+*.DS_Store

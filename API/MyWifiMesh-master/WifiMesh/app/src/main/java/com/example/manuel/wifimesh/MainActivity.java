@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Handler;
@@ -173,10 +174,18 @@ public class MainActivity extends AppCompatActivity {
                     final String networkSSID = separated[1];
                     final String networkPass = separated[2];
                     final String ipAddress   = separated[3];
+                    final String mMACAddress = separated[4];
+
+                    WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+                    WifiInfo wInfo = wifiManager.getConnectionInfo();
+                    String macAddress = wInfo.getMacAddress();
 
                     Log.d("Connection ", "Try to connect............." + ipAddress);
-                    mWifiConnection = new WifiConnection(that,networkSSID,networkPass);
-                    mWifiConnection.SetInetAddress(ipAddress);
+                    if(mMACAddress == macAddress) {
+                        Log.d("Right MAC    ", "YAAAAAAAAYYYYYY");
+                        mWifiConnection = new WifiConnection(that, networkSSID, networkPass);
+                        mWifiConnection.SetInetAddress(ipAddress);
+                    }
                 }
             }
         });
