@@ -69,7 +69,7 @@ public class ChatManager implements Runnable {
         } finally {
             try {
                 socket.close();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }

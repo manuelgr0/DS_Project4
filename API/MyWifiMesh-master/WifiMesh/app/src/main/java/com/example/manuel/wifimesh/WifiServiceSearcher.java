@@ -147,6 +147,7 @@ public class WifiServiceSearcher  implements WifiP2pManager.ChannelListener{
         //
     }
     private void startPeerDiscovery() {
+        myServiceState = ServiceState.NONE;
         p2p.discoverPeers(channel, new WifiP2pManager.ActionListener() {
             public void onSuccess() {
                 myServiceState = ServiceState.DiscoverPeer;
@@ -157,6 +158,7 @@ public class WifiServiceSearcher  implements WifiP2pManager.ChannelListener{
     }
 
     private void stopPeerDiscovery() {
+        myServiceState = ServiceState.NONE;
         p2p.stopPeerDiscovery(channel, new WifiP2pManager.ActionListener() {
             public void onSuccess() {Log.d(TAG, "Stopped peer discovery");}
             public void onFailure(int reason) {Log.d(TAG, "Stopping peer discovery failed, error code " + reason);}
@@ -212,7 +214,8 @@ public class WifiServiceSearcher  implements WifiP2pManager.ChannelListener{
 
                 }
             }else if(WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
-                if(myServiceState != ServiceState.DiscoverService) {
+                if(myServiceState == ServiceState.DiscoverPeer) {
+                    Log.d("status", "ServiceState.DiscoverPeer");
                     p2p.requestPeers(channel, peerListListener);
                 }
             } else if(WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
@@ -225,6 +228,7 @@ public class WifiServiceSearcher  implements WifiP2pManager.ChannelListener{
 
                 if(state == WifiP2pManager.WIFI_P2P_DISCOVERY_STOPPED){
                     persTatu = persTatu + "Stopped.";
+                    Log.d("status", "WIFI_P2P_DISCOVERY_STOPPED");
                     startPeerDiscovery();
                 }else if(state == WifiP2pManager.WIFI_P2P_DISCOVERY_STARTED){
                     persTatu = persTatu + "Started.";
@@ -236,10 +240,10 @@ public class WifiServiceSearcher  implements WifiP2pManager.ChannelListener{
             } else if (WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
                 NetworkInfo networkInfo = (NetworkInfo) intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
                 if (networkInfo.isConnected()) {
-                    Log.d(TAG, "Connected");
+                    Log.d(TAG, "Connected changed action");
                     startPeerDiscovery();
                 } else{
-                    Log.d(TAG, "DIS-Connected");
+                    Log.d(TAG, "DIS-Connected not changed action");
                     startPeerDiscovery();
                 }
             }
