@@ -145,7 +145,7 @@ public class WifiAccessPoint implements WifiP2pManager.ConnectionInfoListener,Wi
         Map<String, String> record = new HashMap<String, String>();
         record.put("available", "visible");
 
-        WifiP2pDnsSdServiceInfo service = WifiP2pDnsSdServiceInfo.newInstance( instance, MainActivity.SERVICE_TYPE, record);
+        WifiP2pDnsSdServiceInfo service = WifiP2pDnsSdServiceInfo.newInstance( instance, Connection.SERVICE_TYPE, record);
 
         Log.d("Add local service :", instance);
         p2p.addLocalService(channel, service, new WifiP2pManager.ActionListener() {

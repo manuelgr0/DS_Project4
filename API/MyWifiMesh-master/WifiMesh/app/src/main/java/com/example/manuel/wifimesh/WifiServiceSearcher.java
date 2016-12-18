@@ -112,7 +112,7 @@ public class WifiServiceSearcher  implements WifiP2pManager.ChannelListener{
 
                 public void onDnsSdServiceAvailable(String instanceName, String serviceType, WifiP2pDevice device) {
 
-                    if (serviceType.startsWith(MainActivity.SERVICE_TYPE)) {
+                    if (serviceType.startsWith(Connection.SERVICE_TYPE)) {
 
                         //instance name has AP information for Client connection
                         if(broadcaster != null) {
@@ -123,7 +123,7 @@ public class WifiServiceSearcher  implements WifiP2pManager.ChannelListener{
 
 
                     } else {
-                        Log.d(TAG, "Not our Service, :" + MainActivity.SERVICE_TYPE + "!=" + serviceType + ":");
+                        Log.d(TAG, "Not our Service, :" + Connection.SERVICE_TYPE + "!=" + serviceType + ":");
                     }
 
                     startPeerDiscovery();
@@ -164,7 +164,7 @@ public class WifiServiceSearcher  implements WifiP2pManager.ChannelListener{
     }
 
     private void startServiceDiscovery() {
-        WifiP2pDnsSdServiceRequest request = WifiP2pDnsSdServiceRequest.newInstance(MainActivity.SERVICE_TYPE);
+        WifiP2pDnsSdServiceRequest request = WifiP2pDnsSdServiceRequest.newInstance(Connection.SERVICE_TYPE);
         final Handler handler = new Handler();
         p2p.addServiceRequest(channel, request, new WifiP2pManager.ActionListener() {
 

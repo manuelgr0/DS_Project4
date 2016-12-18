@@ -48,6 +48,7 @@ public class Connection {
     Boolean serviceRunning = false;
 
     private String serverIp;
+    private String macAddress;
 
     //change me  to be dynamic!!
     public String CLIENT_PORT_INSTANCE = "38080";
@@ -60,7 +61,6 @@ public class Connection {
 
     GroupOwnerSocketHandler  groupSocket = null;
     ClientSocketHandler clientSocket = null;
-    ClientSocketHandler clientSocket2 = null;
     ChatManager chat = null;
     Handler myHandler  = new Handler() {
         @Override
@@ -132,8 +132,9 @@ public class Connection {
     }
 
     public void connect(String macAddress) {
+        this.macAddress = macAddress;
         try{
-            groupSocket = new GroupOwnerSocketHandler(myHandler,Integer.parseInt(SERVICE_PORT_INSTANCE),that);
+            groupSocket = new GroupOwnerSocketHandler(myHandler,Integer.parseInt(SERVICE_PORT_INSTANCE),context);
             groupSocket.start();
             Log.d("","Group socketserver started.");
         }catch (Exception e){
@@ -161,10 +162,10 @@ public class Connection {
             serviceRunning = true;
             Log.d("","Started");
 
-            WifiManager wifi = (WifiManager) getSystemService(WIFI_SERVICE);
+            WifiManager wifi = (WifiManager) context.getSystemService(WIFI_SERVICE);
             wifi.disconnect();
 
-            WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+            WifiManager wm = (WifiManager) context.getSystemService(WIFI_SERVICE);
             List<WifiConfiguration> list = wm.getConfiguredNetworks();
             for( WifiConfiguration i : list ) {
                 wm.removeNetwork(i.networkId);
@@ -172,11 +173,21 @@ public class Connection {
             }
 
             // instantiate new AP and start it
-            mWifiAccessPoint = new WifiAccessPoint(that, macAddress);
+            mWifiAccessPoint = new WifiAccessPoint(context, this.macAddress);
             mWifiAccessPoint.Start();
 
         }
     }
+
+    public void startServiceDiscovery() {
+        Log.d("", "Started");
+
+        // start a new service searcher
+        mWifiServiceSearcher = new WifiServiceSearcher(context);
+        mWifiServiceSearcher.Start();
+    }
+
+
 
         /*Button button5 = (Button) findViewById(R.id.button5);
         button5.setOnClickListener(new View.OnClickListener() {
@@ -247,10 +258,10 @@ public class Connection {
 
             if (WifiServiceSearcher.DSS_WIFISS_PEERAPINFO.equals(action)) {
                 String s = intent.getStringExtra(WifiServiceSearcher.DSS_WIFISS_INFOTEXT);
-
+                Log.d("aödlfjaölskd.......", s);
                 separated = s.split(":");
-                Log.d("SS", "found SSID:" + separated[1] + ", pwd:"  + separated[2]+ "IP: " + separated[3]);
-                SSID = separated[1];
+                Log.d("SS", "found SSID:" + separated[6] + ", pwd:"  + separated[7]+ "IP: " + separated[8]);
+                SSID = separated[6];
 
                 if(mWifiConnection == null) {
                     if(mWifiAccessPoint != null){
@@ -262,10 +273,10 @@ public class Connection {
                         mWifiServiceSearcher = null;
                     }
 
-                    final String networkSSID = separated[1];
-                    final String networkPass = separated[2];
-                    final String ipAddress   = separated[3];
-                    final String mMACAddress = separated[4];
+                    final String networkSSID = separated[6];
+                    final String networkPass = separated[7];
+                    final String ipAddress   = separated[8];
+                    final String mMACAddress = separated[0] + ":" + separated[1] + ":" + separated[2] + ":" + separated[3] + ":" + separated[4] + ":" + separated[5];
 
                     WifiManager wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
                     wifi.disconnect();
@@ -282,12 +293,14 @@ public class Connection {
                     String macAddress = wInfo.getMacAddress();
 
                     Log.d("Connection ", "Try to connect............." + ipAddress);
+                    Log.d("m1", mMACAddress);
+                    Log.d("eingabe", macAddress);
                     if(mMACAddress.equals(macAddress)) {
                         Log.d("Right MAC    ", "YAAAAAAAAYYYYYY");
-                        mWifiConnection = new WifiConnection(that, networkSSID, networkPass);
+                        mWifiConnection = new WifiConnection(context, networkSSID, networkPass);
                         mWifiConnection.SetInetAddress(ipAddress);
                     } else {
-                        Log.d("WRRRROOOOOONNNG   ", "MAAAAAC")
+                        Log.d("WRRRROOOOOONNNG   ", "MAAAAAC");
                     }
                 }
 
@@ -299,7 +312,7 @@ public class Connection {
                 String IpToConnect = mWifiConnection.GetInetAddress();
                 if(clientSocket == null &&  mWifiConnection != null) {
                     //String IpToConnect = mWifiConnection.GetInetAddress();
-                    clientSocket = new ClientSocketHandler(myHandler, IpToConnect, Integer.parseInt(CLIENT_PORT_INSTANCE), that);
+                    clientSocket = new ClientSocketHandler(myHandler, IpToConnect, Integer.parseInt(CLIENT_PORT_INSTANCE), context);
                     clientSocket.start();
                 }
             }else if (WifiConnection.DSS_WIFICON_STATUSVAL.equals(action)) {
@@ -329,7 +342,7 @@ public class Connection {
                         mWifiAccessPoint.Stop();
                         mWifiAccessPoint = null;
                     }
-                    mWifiAccessPoint = new WifiAccessPoint(that);
+                    mWifiAccessPoint = new WifiAccessPoint(context, macAddress);
                     mWifiAccessPoint.Start();
 
                     if(mWifiServiceSearcher != null){
