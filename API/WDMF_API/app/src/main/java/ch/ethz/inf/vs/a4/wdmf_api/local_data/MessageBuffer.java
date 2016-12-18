@@ -185,7 +185,8 @@ final public class MessageBuffer {
             // [0,1]
             float change =ackTable.notReached(buffer.get(i).sender, buffer.get(i).seq);
             change /= (float)networkSize; // mapped to [0,1]
-            long time = lcTable.getLastContactTimestamp(buffer.get(i).sender) - new Date().getTime();
+            long timestamp = lcTable.getLastContactTimestamp(buffer.get(i).sender);
+            long time =  timestamp - new Date().getTime();
             change *= 1.0f - ((float) time / (float)MainService.timeout);
             pi.priority += change;
 
