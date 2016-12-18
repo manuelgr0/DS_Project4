@@ -19,6 +19,7 @@ import java.net.Socket;
 public class DataExchanger extends BroadcastReceiver {
     private enum Role {None, Server, Client};
     private Role role = Role.None;
+    private ServerSocket serverSocket;
 
     // private WifiServiceSearcher    mWifiServiceSearcher = null;
     private WifiAccessPoint        mWifiAccessPoint = null;
@@ -77,6 +78,16 @@ public class DataExchanger extends BroadcastReceiver {
 
     // Opens a server socket
     public void openServer(){
+        if (serverSocket == null){
+            try {
+                serverSocket = new ServerSocket(9100);
+
+               // serverSocket.setSoTimeout(16000);
+                serverSocket.setReuseAddress(true);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         if(socket != null){
             try {
                 socket.close();
@@ -92,8 +103,6 @@ public class DataExchanger extends BroadcastReceiver {
         new Thread() {
             public void run() {
                 try {
-                    ServerSocket serverSocket = new ServerSocket(9100);
-                    serverSocket.setSoTimeout(16000);
                     Log.d(TAG, "Server socket IP:" + serverSocket.getInetAddress());
                     socket = serverSocket.accept();
                     //Log.d(TAG, "A new client Connected!");

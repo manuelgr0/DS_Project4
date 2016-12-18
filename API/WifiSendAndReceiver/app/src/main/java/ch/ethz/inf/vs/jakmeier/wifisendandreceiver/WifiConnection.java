@@ -12,6 +12,9 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import java.net.InetAddress;
+import java.util.Arrays;
+
+import static android.R.attr.action;
 
 public class WifiConnection {
 
@@ -65,6 +68,7 @@ public class WifiConnection {
 
         this.netId = this.wifiManager.addNetwork(this.wifiConfig);
         //   this.wifiManager.disconnect();
+
         this.wifiManager.enableNetwork(this.netId, true);
         boolean success = this.wifiManager.reconnect();
         Log.d("WifiConnection", "connecting to AP successful: " + success);
@@ -88,6 +92,11 @@ public class WifiConnection {
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d("WifiConnection", "OnReceive: " + intent);
+            Log.d("WifiConnection", "Extra: " + Arrays.toString(intent.getExtras().keySet().toArray()));
+            for(String key : intent.getExtras().keySet()){
+                Log.d("WifiConnection", key + " " + intent.getParcelableExtra(key));
+            }
+
             String action = intent.getAction();
             if (WifiManager.NETWORK_STATE_CHANGED_ACTION.equals(action)) {
                 NetworkInfo info = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
@@ -98,11 +107,14 @@ public class WifiConnection {
                         mConectionState = ConectionStateConnected;
                         Log.d("WifiConnection", "is connected now");
                     }else if(info.isConnectedOrConnecting()) {
+                        Log.d("WifiConnection", "is connecting now");
                         mConectionState = ConectionStateConnecting;
                     }else {
                         if(hadConnection){
+                            Log.d("WifiConnection", "is disconnected now");
                             mConectionState = ConectionStateDisconnected;
                         }else{
+                            Log.d("WifiConnection", "is in preconnecting state");
                             mConectionState = ConectionStatePreConnecting;
                         }
                     }
