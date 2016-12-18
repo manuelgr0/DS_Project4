@@ -94,7 +94,6 @@ public class Connection {
         this.context = context;
         WifiManager wifiManager = (WifiManager) context.getSystemService(WIFI_SERVICE);
         wifiManager.setWifiEnabled(false);
-
         wifiManager.setWifiEnabled(true);
 
         mBRReceiver = new MainBCReceiver();
@@ -141,25 +140,6 @@ public class Connection {
             Log.d("", "groupseocket error, :" + e.toString());
         }
 
-        if(serviceRunning) { // stop all services to start anew
-            serviceRunning = false;
-            if(mWifiAccessPoint != null){ // AP already active
-                mWifiAccessPoint.Stop();
-                mWifiAccessPoint = null;
-            }
-
-            if(mWifiServiceSearcher != null){ // searcher active
-                mWifiServiceSearcher.Stop(); // stop searcher (we're AP now)
-                mWifiServiceSearcher = null;
-            }
-
-            if(mWifiConnection != null) { // already open connection
-                mWifiConnection.Stop(); // close connection
-                mWifiConnection = null;
-            }
-            Log.d("","Stopped");
-        }else{
-            serviceRunning = true;
             Log.d("","Started");
 
             WifiManager wifi = (WifiManager) context.getSystemService(WIFI_SERVICE);
@@ -176,7 +156,7 @@ public class Connection {
             mWifiAccessPoint = new WifiAccessPoint(context, this.macAddress);
             mWifiAccessPoint.Start();
 
-        }
+
     }
 
     public void startServiceDiscovery() {

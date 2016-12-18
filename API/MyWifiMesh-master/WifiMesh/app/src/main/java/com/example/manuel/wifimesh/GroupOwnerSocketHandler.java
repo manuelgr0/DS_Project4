@@ -61,6 +61,7 @@ public class GroupOwnerSocketHandler extends Thread {
                 // there is a new connection
                 s = socket.accept();
                 Log.d(TAG, "Launching the Group I/O handler");
+                //TODO: Callback for Köbi
 
             } catch (Exception e) {
                 try {
