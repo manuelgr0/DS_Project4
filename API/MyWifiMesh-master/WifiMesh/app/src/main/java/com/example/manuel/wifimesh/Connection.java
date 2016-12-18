@@ -132,121 +132,54 @@ public class Connection {
         }
     }
 
+    public void connect(String macAddress) {
+        try{
+            groupSocket = new GroupOwnerSocketHandler(myHandler,Integer.parseInt(SERVICE_PORT_INSTANCE),that);
+            groupSocket.start();
+            Log.d("","Group socketserver started.");
+        }catch (Exception e){
+            Log.d("", "groupseocket error, :" + e.toString());
+        }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        Button button1 = (Button) findViewById(R.id.button1);
-        button1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try{
-                    groupSocket = new GroupOwnerSocketHandler(myHandler,Integer.parseInt(SERVICE_PORT_INSTANCE),that);
-                    groupSocket.start();
-                    Log.d("","Group socketserver started.");
-                }catch (Exception e){
-                    Log.d("", "groupseocket error, :" + e.toString());
-                }
-
-                if(serviceRunning) { // stop all services to start anew
-                    serviceRunning = false;
-                    if(mWifiAccessPoint != null){ // AP already active
-                        mWifiAccessPoint.Stop();
-                        mWifiAccessPoint = null;
-                    }
-
-                    if(mWifiServiceSearcher != null){ // searcher active
-                        mWifiServiceSearcher.Stop(); // stop searcher (we're AP now)
-                        mWifiServiceSearcher = null;
-                    }
-
-                    if(mWifiConnection != null) { // already open connection
-                        mWifiConnection.Stop(); // close connection
-                        mWifiConnection = null;
-                    }
-                    Log.d("","Stopped");
-                }else{
-                    serviceRunning = true;
-                    Log.d("","Started");
-
-                    WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-                    wifi.disconnect();
-
-                    WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
-                    List<WifiConfiguration> list = wm.getConfiguredNetworks();
-                    for( WifiConfiguration i : list ) {
-                        wm.removeNetwork(i.networkId);
-                        wm.saveConfiguration();
-                    }
-
-                    // instantiate new AP and start it
-                    mWifiAccessPoint = new WifiAccessPoint(that);
-                    mWifiAccessPoint.Start();
-
-                }
+        if(serviceRunning) { // stop all services to start anew
+            serviceRunning = false;
+            if(mWifiAccessPoint != null){ // AP already active
+                mWifiAccessPoint.Stop();
+                mWifiAccessPoint = null;
             }
-        });
 
-        Button button2 = (Button) findViewById(R.id.button2);
-        button2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                Log.d("","Started");
-
-                // start a new service searcher
-                mWifiServiceSearcher = new WifiServiceSearcher(that);
-                mWifiServiceSearcher.Start();
-
+            if(mWifiServiceSearcher != null){ // searcher active
+                mWifiServiceSearcher.Stop(); // stop searcher (we're AP now)
+                mWifiServiceSearcher = null;
             }
-        });
 
-        Button button3 = (Button) findViewById(R.id.button3);
-        button3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(mWifiConnection == null) {
-                    if(mWifiAccessPoint != null){
-                        mWifiAccessPoint.Stop();
-                        mWifiAccessPoint = null;
-                    }
-                    if(mWifiServiceSearcher != null){
-                        mWifiServiceSearcher.Stop();
-                        mWifiServiceSearcher = null;
-                    }
-
-                    final String networkSSID = separated[1];
-                    final String networkPass = separated[2];
-                    final String ipAddress   = separated[3];
-                    final String mMACAddress = separated[4];
-
-                    WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-                    WifiInfo wInfo = wifiManager.getConnectionInfo();
-                    String macAddress = wInfo.getMacAddress();
-
-                    Log.d("Connection ", "Try to connect............." + ipAddress);
-                    if(mMACAddress == macAddress) {
-                        Log.d("Right MAC    ", "YAAAAAAAAYYYYYY");
-                        mWifiConnection = new WifiConnection(that, networkSSID, networkPass);
-                        mWifiConnection.SetInetAddress(ipAddress);
-                    }
-                }
+            if(mWifiConnection != null) { // already open connection
+                mWifiConnection.Stop(); // close connection
+                mWifiConnection = null;
             }
-        });
+            Log.d("","Stopped");
+        }else{
+            serviceRunning = true;
+            Log.d("","Started");
 
+            WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+            wifi.disconnect();
 
-        Button button4 = (Button) findViewById(R.id.button4);
-
-        button4.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                send("Test".getBytes());
+            WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+            List<WifiConfiguration> list = wm.getConfiguredNetworks();
+            for( WifiConfiguration i : list ) {
+                wm.removeNetwork(i.networkId);
+                wm.saveConfiguration();
             }
-        });
 
-        Button button5 = (Button) findViewById(R.id.button5);
+            // instantiate new AP and start it
+            mWifiAccessPoint = new WifiAccessPoint(that, macAddress);
+            mWifiAccessPoint.Start();
+
+        }
+    }
+
+        /*Button button5 = (Button) findViewById(R.id.button5);
         button5.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -284,20 +217,7 @@ public class Connection {
                 Log.d("Closing", "  COMPLETE!!");
             }
         });
-
-
-
-
-        /*try{
-            groupSocket = new GroupOwnerSocketHandler(myHandler,Integer.parseInt(SERVICE_PORT_INSTANCE),that);
-            groupSocket.start();
-            Log.d("","Group socketserver started.");
-        }catch (Exception e){
-            Log.d("", "groupseocket error, :" + e.toString());
-        }*/
-    }
-
-
+        */
 
     @Override
     public void onDestroy() {
