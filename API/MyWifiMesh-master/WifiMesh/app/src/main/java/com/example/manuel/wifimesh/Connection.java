@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -38,6 +39,9 @@ public class Connection {
     String SSID = "";
     Connection that = this;
     Context context;
+
+    WifiManager mWifiManager;
+    List<ScanResult> peers;
 
     Connection.MainBCReceiver mBRReceiver;
     private IntentFilter filter;
@@ -112,6 +116,12 @@ public class Connection {
 
 
         LocalBroadcastManager.getInstance(context).registerReceiver((mBRReceiver), filter);
+
+
+        mWifiManager = (WifiManager) this.context.getSystemService(Context.WIFI_SERVICE);
+        this.context.registerReceiver(mWifiScanReceiver,
+                new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+        mWifiManager.startScan();
     }
 
     public void send(byte[] msg) {
@@ -185,6 +195,20 @@ public class Connection {
         // start a new service searcher
         mWifiServiceSearcher = new WifiServiceSearcher(context);
         mWifiServiceSearcher.Start();
+    }
+
+    private final BroadcastReceiver mWifiScanReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context c, Intent intent) {
+            if (intent.getAction().equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
+                peers = mWifiManager.getScanResults();
+
+            }
+        }
+    };
+
+    public  List<ScanResult>  getPeers(){
+        return peers;
     }
 
 
@@ -333,4 +357,6 @@ public class Connection {
             }
         }
     }
+
+
 }
