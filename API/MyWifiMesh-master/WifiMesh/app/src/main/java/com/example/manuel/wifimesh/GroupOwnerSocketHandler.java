@@ -56,7 +56,6 @@ public class GroupOwnerSocketHandler extends Thread {
      */
     @Override
     public void run() {
-        //while (true) {
             try {
                 // A blocking operation. Initiate a ChatManager instance when
                 // there is a new connection
@@ -79,10 +78,7 @@ public class GroupOwnerSocketHandler extends Thread {
                     intent.putExtra(DSS_GROUP_MESSAGE, e.toString());
                     broadcaster.sendBroadcast(intent);
                 }
-
-                //break;
             }
-        //}
     }
 
     public void close_socket() throws IOException {
