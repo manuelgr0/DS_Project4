@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AppCompatActivity;
 import android.text.format.Formatter;
 import android.util.Log;
 import android.view.View;
@@ -20,6 +21,8 @@ import android.widget.TextView;
 
 import java.io.IOException;
 import java.util.List;
+
+import static android.content.Context.WIFI_SERVICE;
 
 /**
  * Created by manue on 18.12.2016.
@@ -34,6 +37,7 @@ public class Connection {
 
     String SSID = "";
     Connection that = this;
+    Context context;
 
     Connection.MainBCReceiver mBRReceiver;
     private IntentFilter filter;
@@ -70,35 +74,30 @@ public class Connection {
 
                     Log.d("","Got message: " + readMessage);
 
-                    ((TextView)findViewById(R.id.textView3)).append(readMessage);
                     break;
 
                 case MY_HANDLE:
                     Object obj = msg.obj;
                     chat = (ChatManager) obj;
-
-                    //String helloBuffer = "Hello There from " +  chat.getSide() + " :" + Build.VERSION.SDK_INT + "Groupowner is " + SSID;
-
-                    //chat.write(helloBuffer.getBytes());
                     if (chat.type == 0) {
                         String helloBuffer = "Hello There from " +  chat.getSide() + " :" + Build.VERSION.SDK_INT + "Groupowner is " + SSID;
 
                         chat.write(helloBuffer.getBytes());
                     } else
                         chat.write(chat.getMsg());
-                    //Log.d("","Wrote message: " + new String(chat.getMsg()));
             }
         }
     };
 
-    public WifiConnection() {
+    public Connection(Context context) {
 
-        WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
+        this.context = context;
+        WifiManager wifiManager = (WifiManager) context.getSystemService(WIFI_SERVICE);
         wifiManager.setWifiEnabled(false);
 
         wifiManager.setWifiEnabled(true);
 
-        mBRReceiver = new MainActivity.MainBCReceiver();
+        mBRReceiver = new MainBCReceiver();
         filter = new IntentFilter();
         filter.addAction(WifiAccessPoint.DSS_WIFIAP_VALUES);
         filter.addAction(WifiAccessPoint.DSS_WIFIAP_SERVERADDRESS);
@@ -112,11 +111,11 @@ public class Connection {
         filter.addAction(GroupOwnerSocketHandler.DSS_GROUP_VALUES);
 
 
-        LocalBroadcastManager.getInstance(this).registerReceiver((mBRReceiver), filter);
+        LocalBroadcastManager.getInstance(context).registerReceiver((mBRReceiver), filter);
     }
 
     public void send(byte[] msg) {
-        WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+        WifiManager wm = (WifiManager) context.getSystemService(WIFI_SERVICE);
         String ip = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
         Log.d("Sender ip is:", ip);
         //if(mWifiConnection.GetInetAddress() == ip){
@@ -162,7 +161,7 @@ public class Connection {
             serviceRunning = true;
             Log.d("","Started");
 
-            WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+            WifiManager wifi = (WifiManager) getSystemService(WIFI_SERVICE);
             wifi.disconnect();
 
             WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
@@ -267,7 +266,7 @@ public class Connection {
                     final String ipAddress   = separated[3];
                     final String mMACAddress = separated[4];
 
-                    WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+                    WifiManager wifi = (WifiManager) getSystemService(WIFI_SERVICE);
                     wifi.disconnect();
 
                     WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
@@ -277,7 +276,7 @@ public class Connection {
                         wm.saveConfiguration();
                     }
 
-                    WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+                    WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
                     WifiInfo wInfo = wifiManager.getConnectionInfo();
                     String macAddress = wInfo.getMacAddress();
 
