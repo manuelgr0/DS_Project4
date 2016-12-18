@@ -320,6 +320,7 @@ public class MainActivity extends AppCompatActivity {
                     final String networkSSID = separated[1];
                     final String networkPass = separated[2];
                     final String ipAddress   = separated[3];
+                    final String mMACAddress = separated[4];
 
                     WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
                     wifi.disconnect();
@@ -331,9 +332,16 @@ public class MainActivity extends AppCompatActivity {
                         wm.saveConfiguration();
                     }
 
-                    mWifiConnection = new WifiConnection(that,networkSSID,networkPass);
-                    mWifiConnection.SetInetAddress(ipAddress);
+                    WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+                    WifiInfo wInfo = wifiManager.getConnectionInfo();
+                    String macAddress = wInfo.getMacAddress();
 
+                    Log.d("Connection ", "Try to connect............." + ipAddress);
+                    if(mMACAddress == macAddress) {
+                        Log.d("Right MAC    ", "YAAAAAAAAYYYYYY");
+                        mWifiConnection = new WifiConnection(that, networkSSID, networkPass);
+                        mWifiConnection.SetInetAddress(ipAddress);
+                    }
                 }
 
 
