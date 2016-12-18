@@ -85,7 +85,7 @@ public class GroupOwnerSocketHandler extends Thread {
         }
     }
 
-    /*public void close_socket() throws IOException {
+    public void close_socket() throws IOException {
         if(s != null) {
             s.close();
         }
@@ -96,5 +96,5 @@ public class GroupOwnerSocketHandler extends Thread {
     }
 
     public Socket getSocket() {return s;}
-*/
+
 }

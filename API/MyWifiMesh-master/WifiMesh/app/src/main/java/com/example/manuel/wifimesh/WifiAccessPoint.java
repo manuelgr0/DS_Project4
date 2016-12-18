@@ -46,11 +46,6 @@ public class WifiAccessPoint implements WifiP2pManager.ConnectionInfoListener,Wi
 
     String TAG = "WifiAccessPoint";
 
-    private WifiP2pDnsSdServiceInfo mDnsSdServiceInfo;
-    private String mInstanceName;
-    private Handler mDnsSdServiceHandler;
-    private boolean mKeepBroadcastingLocalSercive;
-
     private BroadcastReceiver receiver;
     private IntentFilter filter;
 
@@ -125,6 +120,12 @@ public class WifiAccessPoint implements WifiP2pManager.ConnectionInfoListener,Wi
 
             if(mNetworkName.equals(group.getNetworkName()) && mPassphrase.equals(group.getPassphrase())){
                 Log.d(TAG, "Already have local service for " + mNetworkName + " ," + mPassphrase);
+                /*stopLocalServices();
+                removeGroup();
+                mNetworkName = group.getNetworkName();
+                mPassphrase = group.getPassphrase();
+                startLocalService("NI:" + group.getNetworkName() + ":" + group.getPassphrase() + ":" + mInetAddress);
+*/
             }else {
 
                 mNetworkName = group.getNetworkName();
@@ -176,6 +177,7 @@ public class WifiAccessPoint implements WifiP2pManager.ConnectionInfoListener,Wi
             if (info.isGroupOwner) {
                 if(broadcaster != null) {
                     mInetAddress = info.groupOwnerAddress.getHostAddress();
+                    Log.d("-------------" , "yolo ---------" + mInetAddress);
                     Intent intent = new Intent(DSS_WIFIAP_SERVERADDRESS);
                     intent.putExtra(DSS_WIFIAP_INETADDRESS, (Serializable)info.groupOwnerAddress);
                     broadcaster.sendBroadcast(intent);

@@ -88,6 +88,14 @@ public class MainActivity extends AppCompatActivity {
         button1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                /*try{
+                    groupSocket = new GroupOwnerSocketHandler(myHandler,Integer.parseInt(SERVICE_PORT_INSTANCE),that);
+                    groupSocket.start();
+                    Log.d("","Group socketserver started.");
+                }catch (Exception e){
+                    Log.d("", "groupseocket error, :" + e.toString());
+                }
+*/
                 if(serviceRunning) { // stop all services to start anew
                     serviceRunning = false;
                     if(mWifiAccessPoint != null){ // AP already active
@@ -109,6 +117,13 @@ public class MainActivity extends AppCompatActivity {
                     serviceRunning = true;
                     Log.d("","Started");
 
+                    WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+                    List<WifiConfiguration> list = wm.getConfiguredNetworks();
+                    for( WifiConfiguration i : list ) {
+                        wm.removeNetwork(i.networkId);
+                        wm.saveConfiguration();
+                    }
+
                     // instantiate new AP and start it
                     mWifiAccessPoint = new WifiAccessPoint(that);
                     mWifiAccessPoint.Start();
@@ -121,31 +136,13 @@ public class MainActivity extends AppCompatActivity {
         button2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(serviceRunning) { // stop all services to start anew, same as in button1
-                    serviceRunning = false;
-                    if(mWifiAccessPoint != null){
-                        mWifiAccessPoint.Stop();
-                        mWifiAccessPoint = null;
-                    }
 
-                    if(mWifiServiceSearcher != null){
-                        mWifiServiceSearcher.Stop();
-                        mWifiServiceSearcher = null;
-                    }
-
-                    if(mWifiConnection != null) {
-                        mWifiConnection.Stop();
-                        mWifiConnection = null;
-                    }
-                    Log.d("","Stopped");
-                }else{
-                    serviceRunning = true;
                     Log.d("","Started");
 
                     // start a new service searcher
                     mWifiServiceSearcher = new WifiServiceSearcher(that);
                     mWifiServiceSearcher.Start();
-                }
+
             }
         });
 
@@ -194,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-/*
+
         Button button5 = (Button) findViewById(R.id.button5);
         button5.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -231,16 +228,9 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 Log.d("Closing", "  COMPLETE!!");
-
-                WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
-                List<WifiConfiguration> list = wm.getConfiguredNetworks();
-                for( WifiConfiguration i : list ) {
-                    wm.removeNetwork(i.networkId);
-                    wm.saveConfiguration();
-                }
             }
         });
-        */
+
 
         mBRReceiver = new MainBCReceiver();
         filter = new IntentFilter();
@@ -300,6 +290,33 @@ public class MainActivity extends AppCompatActivity {
                 ((TextView) findViewById(R.id.textView2)).setText("found SSID:" + separated[1] + ", pwd:"  + separated[2]);
                 SSID = separated[1];
 
+                if(mWifiConnection == null) {
+                    if(mWifiAccessPoint != null){
+                        mWifiAccessPoint.Stop();
+                        mWifiAccessPoint = null;
+                    }
+                    if(mWifiServiceSearcher != null){
+                        mWifiServiceSearcher.Stop();
+                        mWifiServiceSearcher = null;
+                    }
+
+                    final String networkSSID = separated[1];
+                    final String networkPass = separated[2];
+                    final String ipAddress   = separated[3];
+
+                    WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+                    List<WifiConfiguration> list = wm.getConfiguredNetworks();
+                    for( WifiConfiguration i : list ) {
+                        wm.removeNetwork(i.networkId);
+                        wm.saveConfiguration();
+                    }
+
+                    mWifiConnection = new WifiConnection(that,networkSSID,networkPass);
+                    mWifiConnection.SetInetAddress(ipAddress);
+
+                }
+
+
             }else if (WifiConnection.DSS_WIFICON_SERVERADDRESS.equals(action)) {
                 int addr = intent.getIntExtra(WifiConnection.DSS_WIFICON_INETADDRESS, -1);
                 Log.d("COM", "IP" + Formatter.formatIpAddress(addr));
@@ -307,7 +324,6 @@ public class MainActivity extends AppCompatActivity {
                 String IpToConnect = mWifiConnection.GetInetAddress();
                 if(clientSocket == null &&  mWifiConnection != null) {
                     //String IpToConnect = mWifiConnection.GetInetAddress();
-                    Log.d("","Starting client socket conenction to : " + serverIp);
                     Log.d("","Starting client socket conenction to : " + IpToConnect);
                     clientSocket = new ClientSocketHandler(myHandler,IpToConnect, Integer.parseInt(CLIENT_PORT_INSTANCE), that);
                     clientSocket.start();
@@ -347,8 +363,8 @@ public class MainActivity extends AppCompatActivity {
                         mWifiServiceSearcher = null;
                     }
 
-                    mWifiServiceSearcher = new WifiServiceSearcher(that);
-                    mWifiServiceSearcher.Start();
+                    //mWifiServiceSearcher = new WifiServiceSearcher(that);
+                    //mWifiServiceSearcher.Start();
                 }
 
                 Log.d("COM", "Status " + conStatus);

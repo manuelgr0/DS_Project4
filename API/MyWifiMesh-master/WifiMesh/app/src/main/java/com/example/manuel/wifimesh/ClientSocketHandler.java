@@ -38,6 +38,7 @@ public class  ClientSocketHandler extends Thread {
         socket = new Socket();
         try {
             socket.bind(null);
+            Log.d("kkkkkkkkkkkkkk","kkkkkkkkkkkkk");
             socket.connect(new InetSocketAddress(mAddress,mPort));
             Log.d(TAG, "Launching the I/O handler");
             chat = new ChatManager(socket, handler, "Client");
@@ -62,12 +63,12 @@ public class  ClientSocketHandler extends Thread {
         }
     }
 
-    /*public void close_socket() throws IOException {
+    public void close_socket() throws IOException {
         if(socket != null && socket_connected) {
             socket.close();
             socket_connected = false;
         }
-    }*/
+    }
 
     public ChatManager getChat() {
         return chat;

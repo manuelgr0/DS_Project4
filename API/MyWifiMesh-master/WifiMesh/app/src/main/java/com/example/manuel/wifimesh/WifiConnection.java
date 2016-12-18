@@ -113,6 +113,7 @@ public class WifiConnection {
                             mConectionState = ConectionStateDisconnected;
                         }else{
                             mConectionState = ConectionStatePreConnecting;
+                            wifiManager.reconnect();
                         }
                     }
 
