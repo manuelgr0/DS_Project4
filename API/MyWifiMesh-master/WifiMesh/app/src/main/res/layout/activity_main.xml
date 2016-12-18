@@ -8,7 +8,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.example.manuel.wifimesh.MainActivity">
+    tools:context="com.example.manuel.wifimesh.ch.ethz.inf.vs.a4.wdmf_api.io.MainActivity">
 
     <Button
         android:text="Start Access Point"

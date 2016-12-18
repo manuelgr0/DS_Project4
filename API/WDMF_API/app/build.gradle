@@ -1,13 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 22
+    compileSdkVersion 24
     buildToolsVersion "24.0.3"
     defaultConfig {
         applicationId "ch.ethz.inf.vs.a4.wdmf_api"
         minSdkVersion 16
-        maxSdkVersion 22
-        targetSdkVersion 22
+        targetSdkVersion 24
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"

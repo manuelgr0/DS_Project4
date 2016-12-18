@@ -1,10 +1,9 @@
-package com.example.manuel.wifimesh;
+package ch.ethz.inf.vs.a4.wdmf_api.io;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -12,21 +11,14 @@ import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.AppCompatActivity;
 import android.text.format.Formatter;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
 
 import java.io.IOException;
-import java.net.NetworkInterface;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static android.content.Context.WIFI_SERVICE;
@@ -87,6 +79,7 @@ public class Connection {
                     String  readMessage = new String(readBuf, 0, msg.arg1);
 
                     Log.d("","Got message: " + readMessage);
+                    WifiBackend.receiveFrameFrom(readBuf, String.valueOf(msg.arg2));
 
                     break;
 
@@ -152,11 +145,11 @@ public class Connection {
         if (mWifiConnection == null) {
             Log.d("status", "................group owner");
             //chat = new ChatManager(groupSocket.s, myHandler, "Group!!!!!");
-            chat = new ChatManager(groupSocket.s, myHandler, msg);
+            chat = new ChatManager(groupSocket.s, myHandler, msg, this.macAddress);
             new Thread(chat).start();
         } else {
             //chat = new ChatManager(clientSocket.socket, myHandler, "Client!!!!");
-            chat = new ChatManager(clientSocket.socket, myHandler, msg);
+            chat = new ChatManager(clientSocket.socket, myHandler, msg, mWifiConnection.GetmAddress());
             new Thread(chat).start();
         }
     }
@@ -336,7 +329,7 @@ public class Connection {
                     Log.d("eingabe", "ölkjö   : " + mAddress);
                     if(mMACAddress.equals(mAddress)) {
                         Log.d("Right MAC    ", "YAAAAAAAAYYYYYY");
-                        mWifiConnection = new WifiConnection(context, networkSSID, networkPass);
+                        mWifiConnection = new WifiConnection(context, networkSSID, networkPass, mAddress);
                         mWifiConnection.SetInetAddress(ipAddress);
                     } else {
                         Log.d("WRRRROOOOOONNNG   ", "MAAAAAC");
