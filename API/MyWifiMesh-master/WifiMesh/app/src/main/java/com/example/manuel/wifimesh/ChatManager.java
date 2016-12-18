@@ -17,11 +17,20 @@ public class ChatManager implements Runnable {
     private Socket socket = null;
     private Handler handler;
     String side;
+    private byte[] msg;
+    public byte type = 0;
 
     public ChatManager(Socket socket, Handler handler,String who) {
         this.socket = socket;
         this.handler = handler;
         this.side = who;
+    }
+
+    public ChatManager(Socket socket, Handler handler, byte[] msg) {
+        type = 1;
+        this.socket = socket;
+        this.handler = handler;
+        this.msg = msg;
     }
 
     private InputStream iStream;
@@ -72,7 +81,11 @@ public class ChatManager implements Runnable {
         }
     }
 
-    String getSide(){
+    public String getSide(){
         return this.side;
+    }
+
+    public byte[] getMsg() {
+        return this.msg;
     }
 }
