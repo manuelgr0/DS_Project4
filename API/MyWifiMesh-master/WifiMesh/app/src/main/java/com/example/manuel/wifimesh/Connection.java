@@ -162,8 +162,6 @@ public class Connection {
     }
 
     public void connect(String macAddress) {
-        stopServiceDiscovery();
-
         this.macAddress = macAddress;
         try{
             groupSocket = new GroupOwnerSocketHandler(myHandler,Integer.parseInt(SERVICE_PORT_INSTANCE),context);
@@ -201,7 +199,7 @@ public class Connection {
     }
 
     public void stopServiceDiscovery() {
-
+        closeConnection();
     }
 
     public void closeConnection() {

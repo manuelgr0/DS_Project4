@@ -40,16 +40,16 @@ public class WifiServiceSearcher  implements WifiP2pManager.ChannelListener{
     static final public String DSS_WIFISS_INFOTEXT = "test.microsoft.com.mywifimesh.DSS_WIFISS_INFOTEXT";
 
     WifiServiceSearcher that = this;
-    LocalBroadcastManager broadcaster;
-    Context context;
+    LocalBroadcastManager broadcaster = null;
+    Context context = null;
 
-    private BroadcastReceiver receiver;
-    private IntentFilter filter;
+    private BroadcastReceiver receiver = null;
+    private IntentFilter filter = null;
 
-    private WifiP2pManager p2p;
-    private WifiP2pManager.Channel channel;
-    private WifiP2pManager.DnsSdServiceResponseListener serviceListener;
-    private WifiP2pManager.PeerListListener peerListListener;
+    private WifiP2pManager p2p = null;
+    private WifiP2pManager.Channel channel = null;
+    private WifiP2pManager.DnsSdServiceResponseListener serviceListener = null;
+    private WifiP2pManager.PeerListListener peerListListener = null;
 
     enum ServiceState{
         NONE,
@@ -87,7 +87,7 @@ public class WifiServiceSearcher  implements WifiP2pManager.ChannelListener{
 
                 public void onPeersAvailable(WifiP2pDeviceList peers) {
 
-                    final WifiP2pDeviceList pers = peers;
+                    WifiP2pDeviceList pers = peers;
                     int numm = 0;
                     for (WifiP2pDevice peer : pers.getDeviceList()) {
                         numm++;
@@ -131,7 +131,7 @@ public class WifiServiceSearcher  implements WifiP2pManager.ChannelListener{
             };
 
             p2p.setDnsSdResponseListeners(channel, serviceListener, null);
-            startPeerDiscovery();
+            //startPeerDiscovery();
         }
     }
 
@@ -241,7 +241,7 @@ public class WifiServiceSearcher  implements WifiP2pManager.ChannelListener{
                 NetworkInfo networkInfo = (NetworkInfo) intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
                 if (networkInfo.isConnected()) {
                     Log.d(TAG, "Connected changed action");
-                    startPeerDiscovery();
+                    //startPeerDiscovery();
                 } else{
                     Log.d(TAG, "DIS-Connected not changed action");
                     startPeerDiscovery();
