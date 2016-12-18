@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 
 /**
  * Handles reading and writing of messages with socket buffers. Uses a Handler
@@ -59,7 +60,8 @@ public class ChatManager implements Runnable {
                     Log.d(TAG, "Rec:" + String.valueOf(buffer));
                     handler.obtainMessage(Connection.MESSAGE_READ,bytes, -1, buffer).sendToTarget();
                 } catch (IOException e) {
-                    Log.e(TAG, "disconnected", e);
+                    Log.d(TAG, "disconnected", e);
+                    break;
                 }
             }
         } catch (IOException e) {
