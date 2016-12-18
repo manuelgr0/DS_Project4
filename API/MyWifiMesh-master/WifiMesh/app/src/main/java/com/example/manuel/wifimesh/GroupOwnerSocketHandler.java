@@ -31,6 +31,7 @@ public class GroupOwnerSocketHandler extends Thread {
             this.broadcaster = LocalBroadcastManager.getInstance(context);
             ServerSocket socket = new ServerSocket(port);
             socket.setReuseAddress(true);
+            Log.d(TAG, "Server socket is bound to local IP: " + socket.getLocalSocketAddress().toString());
             this.handler = handler;
             this.socket = socket;
             Log.d("GroupOwnerSocketHandler", "Socket Started");
@@ -60,6 +61,7 @@ public class GroupOwnerSocketHandler extends Thread {
                 // A blocking operation. Initiate a ChatManager instance when
                 // there is a new connection
                 s = socket.accept();
+                Log.d(TAG, "Server socket got a connection from remote IP: " + s.getInetAddress().toString());
                 Log.d(TAG, "Launching the Group I/O handler");
                 chat = new ChatManager(s, handler, "Group");
                 new Thread(chat).start();
