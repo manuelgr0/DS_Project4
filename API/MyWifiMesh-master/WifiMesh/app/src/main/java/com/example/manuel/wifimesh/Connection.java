@@ -8,6 +8,9 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.net.wifi.p2p.WifiP2pDevice;
+import android.net.wifi.p2p.WifiP2pDeviceList;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -21,6 +24,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static android.content.Context.WIFI_SERVICE;
@@ -41,7 +45,10 @@ public class Connection {
     Context context;
 
     WifiManager mWifiManager;
-    List<ScanResult> peers;
+    WifiP2pManager mManager;
+    private WifiP2pManager.Channel mChannel;
+    WifiP2pManager.PeerListListener mypeerlistener;
+    private List peers = new ArrayList();
 
     Connection.MainBCReceiver mBRReceiver;
     private IntentFilter filter;
@@ -53,6 +60,7 @@ public class Connection {
 
     private String serverIp;
     private String macAddress;
+    private String mAddress = "";
 
     //change me  to be dynamic!!
     public String CLIENT_PORT_INSTANCE = "38080";
@@ -112,15 +120,26 @@ public class Connection {
         filter.addAction(WifiConnection.DSS_WIFICON_SERVERADDRESS);
         filter.addAction(ClientSocketHandler.DSS_CLIENT_VALUES);
         filter.addAction(GroupOwnerSocketHandler.DSS_GROUP_VALUES);
+        filter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
 
 
         LocalBroadcastManager.getInstance(context).registerReceiver((mBRReceiver), filter);
 
+        mManager = (WifiP2pManager) this.context.getSystemService(Context.WIFI_P2P_SERVICE);
+        mChannel = mManager.initialize(context, this.context.getMainLooper(), null);
 
-        mWifiManager = (WifiManager) this.context.getSystemService(Context.WIFI_SERVICE);
-        this.context.registerReceiver(mWifiScanReceiver,
-                new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-        mWifiManager.startScan();
+        mypeerlistener = new WifiP2pManager.PeerListListener() {
+            @Override
+            public void onPeersAvailable(WifiP2pDeviceList peerList) {
+                Log.d("wifi", "here");
+                // Out with the old, in with the new.
+                peers.clear();
+                for(WifiP2pDevice peer : peerList.getDeviceList()) {
+                    peers.add(peer.deviceAddress);
+                }
+            }
+        };
+
     }
 
     public void send(byte[] msg) {
@@ -177,21 +196,6 @@ public class Connection {
         mWifiServiceSearcher.Start();
     }
 
-    private final BroadcastReceiver mWifiScanReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context c, Intent intent) {
-            if (intent.getAction().equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
-                peers = mWifiManager.getScanResults();
-
-            }
-        }
-    };
-
-    public  List<ScanResult>  getPeers(){
-        return peers;
-    }
-
-
     public void closeConnection() {
         if(mWifiConnection != null) {
             mWifiConnection.Stop();
@@ -228,6 +232,23 @@ public class Connection {
         Log.d("Closing", "  COMPLETE!!");
     }
 
+
+    public void discoverp() {
+        mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+            }
+
+            @Override
+            public void onFailure(int reasonCode) {
+            }
+        });
+    }
+
+    public List updatepeer() {
+        mManager.requestPeers(mChannel, mypeerlistener);
+        return peers;
+    }
 
     private class MainBCReceiver extends BroadcastReceiver {
 
@@ -269,12 +290,12 @@ public class Connection {
 
                     WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
                     WifiInfo wInfo = wifiManager.getConnectionInfo();
-                    String macAddress = wInfo.getMacAddress();
+                    mAddress = wInfo.getMacAddress();
 
                     Log.d("Connection ", "Try to connect............." + ipAddress);
                     Log.d("m1", mMACAddress);
-                    Log.d("eingabe", macAddress);
-                    if(mMACAddress.equals(macAddress)) {
+                    Log.d("eingabe", "ölkjö   : " + mAddress);
+                    if(mMACAddress.equals(mAddress)) {
                         Log.d("Right MAC    ", "YAAAAAAAAYYYYYY");
                         mWifiConnection = new WifiConnection(context, networkSSID, networkPass);
                         mWifiConnection.SetInetAddress(ipAddress);

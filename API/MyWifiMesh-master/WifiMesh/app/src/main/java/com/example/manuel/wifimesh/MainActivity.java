@@ -79,14 +79,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-
-                for(ScanResult results : conn.peers){
-
-                    txtPeers.append(results.BSSID + "\n");
-
-                }
-
-
+                conn.discoverp();
+                List peers = conn.updatepeer();
+                txtPeers.setText(peers.toString());
             }
         });
     }
