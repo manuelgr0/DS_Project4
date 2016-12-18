@@ -235,6 +235,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
+        wifiManager.setWifiEnabled(false);
+        wifiManager.setWifiEnabled(true);
 
         mBRReceiver = new MainBCReceiver();
         filter = new IntentFilter();

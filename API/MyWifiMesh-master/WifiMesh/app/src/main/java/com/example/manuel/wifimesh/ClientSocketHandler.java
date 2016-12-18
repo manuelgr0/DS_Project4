@@ -39,7 +39,7 @@ public class  ClientSocketHandler extends Thread {
         try {
             socket.bind(null);
             Log.d("kkkkkkkkkkkkkk","kkkkkkkkkkkkk" + mAddress);
-            socket.connect(new InetSocketAddress(mAddress,mPort));
+            socket.connect(new InetSocketAddress(mAddress,mPort), 5000);
             Log.d(TAG, "Launching the I/O handler");
             chat = new ChatManager(socket, handler, "Client");
             new Thread(chat).start();
