@@ -60,4 +60,28 @@
         android:layout_toRightOf="@+id/button2"
         android:layout_toEndOf="@+id/button2" />
 
+    <Button
+        android:text="get peers"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btnPeers"
+        android:layout_below="@+id/button2"
+        android:layout_toRightOf="@+id/button1"
+        android:layout_toEndOf="@+id/button1"
+        android:layout_marginLeft="27dp"
+        android:layout_marginStart="27dp"
+        android:layout_marginTop="25dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btnPeers"
+        android:layout_marginTop="33dp"
+        android:id="@+id/txtPeers"
+        android:layout_alignBottom="@+id/textView3"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_toRightOf="@+id/button1"
+        android:layout_toEndOf="@+id/button1"/>
+
 </RelativeLayout>
