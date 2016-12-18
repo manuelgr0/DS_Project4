@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     Boolean serviceRunning = false;
 
     private String serverIp;
+    private String macAddress;
 
     //change me  to be dynamic!!
     public String CLIENT_PORT_INSTANCE = "38080";
@@ -96,50 +97,7 @@ public class MainActivity extends AppCompatActivity {
         button1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try{
-                    groupSocket = new GroupOwnerSocketHandler(myHandler,Integer.parseInt(SERVICE_PORT_INSTANCE),that);
-                    groupSocket.start();
-                    Log.d("","Group socketserver started.");
-                }catch (Exception e){
-                    Log.d("", "groupseocket error, :" + e.toString());
-                }
-
-                if(serviceRunning) { // stop all services to start anew
-                    serviceRunning = false;
-                    if(mWifiAccessPoint != null){ // AP already active
-                        mWifiAccessPoint.Stop();
-                        mWifiAccessPoint = null;
-                    }
-
-                    if(mWifiServiceSearcher != null){ // searcher active
-                        mWifiServiceSearcher.Stop(); // stop searcher (we're AP now)
-                        mWifiServiceSearcher = null;
-                    }
-
-                    if(mWifiConnection != null) { // already open connection
-                        mWifiConnection.Stop(); // close connection
-                        mWifiConnection = null;
-                    }
-                    Log.d("","Stopped");
-                }else{
-                    serviceRunning = true;
-                    Log.d("","Started");
-
-                    WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-                    wifi.disconnect();
-
-                    WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
-                    List<WifiConfiguration> list = wm.getConfiguredNetworks();
-                    for( WifiConfiguration i : list ) {
-                        wm.removeNetwork(i.networkId);
-                        wm.saveConfiguration();
-                    }
-
-                    // instantiate new AP and start it
-                    mWifiAccessPoint = new WifiAccessPoint(that);
-                    mWifiAccessPoint.Start();
-
-                }
+                connect("flöasdfjajf");
             }
         });
 
@@ -157,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Button button3 = (Button) findViewById(R.id.button3);
+        /*Button button3 = (Button) findViewById(R.id.button3);
         button3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -188,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }
-        });
+        });*/
 
 
         Button button4 = (Button) findViewById(R.id.button4);
@@ -287,6 +245,53 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void connect(String macAddress) {
+        try{
+            groupSocket = new GroupOwnerSocketHandler(myHandler,Integer.parseInt(SERVICE_PORT_INSTANCE),that);
+            groupSocket.start();
+            Log.d("","Group socketserver started.");
+        }catch (Exception e){
+            Log.d("", "groupseocket error, :" + e.toString());
+        }
+
+        if(serviceRunning) { // stop all services to start anew
+            serviceRunning = false;
+            if(mWifiAccessPoint != null){ // AP already active
+                mWifiAccessPoint.Stop();
+                mWifiAccessPoint = null;
+            }
+
+            if(mWifiServiceSearcher != null){ // searcher active
+                mWifiServiceSearcher.Stop(); // stop searcher (we're AP now)
+                mWifiServiceSearcher = null;
+            }
+
+            if(mWifiConnection != null) { // already open connection
+                mWifiConnection.Stop(); // close connection
+                mWifiConnection = null;
+            }
+            Log.d("","Stopped");
+        }else{
+            serviceRunning = true;
+            Log.d("","Started");
+
+            WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+            wifi.disconnect();
+
+            WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+            List<WifiConfiguration> list = wm.getConfiguredNetworks();
+            for( WifiConfiguration i : list ) {
+                wm.removeNetwork(i.networkId);
+                wm.saveConfiguration();
+            }
+
+            // instantiate new AP and start it
+            mWifiAccessPoint = new WifiAccessPoint(that, macAddress);
+            mWifiAccessPoint.Start();
+
+        }
+    }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -333,7 +338,7 @@ public class MainActivity extends AppCompatActivity {
                     final String networkSSID = separated[1];
                     final String networkPass = separated[2];
                     final String ipAddress   = separated[3];
-                    final String mMACAddress = separated[4];
+                    final String mMACAddress = separated[0];
 
                     WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
                     wifi.disconnect();
@@ -350,11 +355,12 @@ public class MainActivity extends AppCompatActivity {
                     String macAddress = wInfo.getMacAddress();
 
                     Log.d("Connection ", "Try to connect............." + ipAddress);
-                    if(mMACAddress == macAddress) {
+                    if(mMACAddress.equals(macAddress)) {
                         Log.d("Right MAC    ", "YAAAAAAAAYYYYYY");
                         mWifiConnection = new WifiConnection(that, networkSSID, networkPass);
                         mWifiConnection.SetInetAddress(ipAddress);
-                    }
+                    } else
+                        Log.d("False MAC", "NOOOOPEEEEE");
                 }
 
 
@@ -395,7 +401,7 @@ public class MainActivity extends AppCompatActivity {
                         mWifiAccessPoint.Stop();
                         mWifiAccessPoint = null;
                     }
-                    mWifiAccessPoint = new WifiAccessPoint(that);
+                    mWifiAccessPoint = new WifiAccessPoint(that, macAddress);
                     mWifiAccessPoint.Start();
 
                     if(mWifiServiceSearcher != null){
