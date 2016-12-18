@@ -41,8 +41,8 @@ public class MainActivity extends AppCompatActivity {
     private String serverIp;
 
     //change me  to be dynamic!!
-    public String CLIENT_PORT_INSTANCE = "38000";
-    public String SERVICE_PORT_INSTANCE = "38000";
+    public String CLIENT_PORT_INSTANCE = "38080";
+    public String SERVICE_PORT_INSTANCE = "38080";
 
     public static final int MESSAGE_READ = 0x400 + 1;
     public static final int MY_HANDLE = 0x400 + 2;
@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
 
     GroupOwnerSocketHandler  groupSocket = null;
     ClientSocketHandler clientSocket = null;
+    ClientSocketHandler clientSocket2 = null;
     ChatManager chat = null;
     Handler myHandler  = new Handler() {
         @Override
@@ -88,14 +89,14 @@ public class MainActivity extends AppCompatActivity {
         button1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /*try{
+                try{
                     groupSocket = new GroupOwnerSocketHandler(myHandler,Integer.parseInt(SERVICE_PORT_INSTANCE),that);
                     groupSocket.start();
                     Log.d("","Group socketserver started.");
                 }catch (Exception e){
                     Log.d("", "groupseocket error, :" + e.toString());
                 }
-*/
+
                 if(serviceRunning) { // stop all services to start anew
                     serviceRunning = false;
                     if(mWifiAccessPoint != null){ // AP already active
@@ -116,6 +117,9 @@ public class MainActivity extends AppCompatActivity {
                 }else{
                     serviceRunning = true;
                     Log.d("","Started");
+
+                    WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+                    wifi.disconnect();
 
                     WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
                     List<WifiConfiguration> list = wm.getConfiguredNetworks();
@@ -248,13 +252,14 @@ public class MainActivity extends AppCompatActivity {
 
         LocalBroadcastManager.getInstance(this).registerReceiver((mBRReceiver), filter);
 
-        try{
+
+        /*try{
             groupSocket = new GroupOwnerSocketHandler(myHandler,Integer.parseInt(SERVICE_PORT_INSTANCE),that);
             groupSocket.start();
             Log.d("","Group socketserver started.");
         }catch (Exception e){
             Log.d("", "groupseocket error, :" + e.toString());
-        }
+        }*/
     }
 
     @Override
@@ -304,6 +309,9 @@ public class MainActivity extends AppCompatActivity {
                     final String networkPass = separated[2];
                     final String ipAddress   = separated[3];
 
+                    WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+                    wifi.disconnect();
+
                     WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
                     List<WifiConfiguration> list = wm.getConfiguredNetworks();
                     for( WifiConfiguration i : list ) {
@@ -324,8 +332,7 @@ public class MainActivity extends AppCompatActivity {
                 String IpToConnect = mWifiConnection.GetInetAddress();
                 if(clientSocket == null &&  mWifiConnection != null) {
                     //String IpToConnect = mWifiConnection.GetInetAddress();
-                    Log.d("","Starting client socket conenction to : " + IpToConnect);
-                    clientSocket = new ClientSocketHandler(myHandler,IpToConnect, Integer.parseInt(CLIENT_PORT_INSTANCE), that);
+                    clientSocket = new ClientSocketHandler(myHandler, IpToConnect, Integer.parseInt(CLIENT_PORT_INSTANCE), that);
                     clientSocket.start();
                 }
             }else if (WifiConnection.DSS_WIFICON_STATUSVAL.equals(action)) {

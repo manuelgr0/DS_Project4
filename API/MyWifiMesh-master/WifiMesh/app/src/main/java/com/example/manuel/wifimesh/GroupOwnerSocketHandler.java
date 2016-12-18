@@ -30,6 +30,7 @@ public class GroupOwnerSocketHandler extends Thread {
         try {
             this.broadcaster = LocalBroadcastManager.getInstance(context);
             ServerSocket socket = new ServerSocket(port);
+            socket.setReuseAddress(true);
             this.handler = handler;
             this.socket = socket;
             Log.d("GroupOwnerSocketHandler", "Socket Started");

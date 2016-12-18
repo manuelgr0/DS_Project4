@@ -38,7 +38,7 @@ public class  ClientSocketHandler extends Thread {
         socket = new Socket();
         try {
             socket.bind(null);
-            Log.d("kkkkkkkkkkkkkk","kkkkkkkkkkkkk");
+            Log.d("kkkkkkkkkkkkkk","kkkkkkkkkkkkk" + mAddress);
             socket.connect(new InetSocketAddress(mAddress,mPort));
             Log.d(TAG, "Launching the I/O handler");
             chat = new ChatManager(socket, handler, "Client");
