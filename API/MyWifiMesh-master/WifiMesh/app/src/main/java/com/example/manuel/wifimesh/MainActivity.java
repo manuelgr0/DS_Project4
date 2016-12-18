@@ -60,5 +60,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         button3.setText("Send");
+
+        Button button4 = (Button) findViewById(R.id.button4);
+        button4.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                conn.closeConnection();
+            }
+        });
+        button4.setText("Close connection");
     }
 }
