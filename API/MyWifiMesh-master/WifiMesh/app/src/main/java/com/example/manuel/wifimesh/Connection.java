@@ -24,7 +24,9 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import java.io.IOException;
+import java.net.NetworkInterface;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static android.content.Context.WIFI_SERVICE;
@@ -160,6 +162,8 @@ public class Connection {
     }
 
     public void connect(String macAddress) {
+        stopServiceDiscovery();
+
         this.macAddress = macAddress;
         try{
             groupSocket = new GroupOwnerSocketHandler(myHandler,Integer.parseInt(SERVICE_PORT_INSTANCE),context);
@@ -194,6 +198,10 @@ public class Connection {
         // start a new service searcher
         mWifiServiceSearcher = new WifiServiceSearcher(context);
         mWifiServiceSearcher.Start();
+    }
+
+    public void stopServiceDiscovery() {
+
     }
 
     public void closeConnection() {
@@ -288,8 +296,8 @@ public class Connection {
                         wm.saveConfiguration();
                     }
 
-                    WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-                    WifiInfo wInfo = wifiManager.getConnectionInfo();
+                    mWifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+                    WifiInfo wInfo = mWifiManager.getConnectionInfo();
                     mAddress = wInfo.getMacAddress();
 
                     Log.d("Connection ", "Try to connect............." + ipAddress);
@@ -315,6 +323,14 @@ public class Connection {
                     clientSocket = new ClientSocketHandler(myHandler, IpToConnect, Integer.parseInt(CLIENT_PORT_INSTANCE), context);
                     clientSocket.start();
                 }
+            }else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
+
+                WifiP2pDevice device = (WifiP2pDevice) intent
+                        .getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
+
+                String myMac = device.deviceAddress;
+
+                Log.d("$$$$$$$$$$$$$$$$$$$$", "Device WiFi P2p MAC Address: " + myMac);
             }else if (WifiConnection.DSS_WIFICON_STATUSVAL.equals(action)) {
                 int status = intent.getIntExtra(WifiConnection.DSS_WIFICON_CONSTATUS, -1);
 
