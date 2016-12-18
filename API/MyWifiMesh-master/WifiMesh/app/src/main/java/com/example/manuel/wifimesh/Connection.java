@@ -188,50 +188,7 @@ public class Connection {
     }
 
 
-
-        /*Button button5 = (Button) findViewById(R.id.button5);
-        button5.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(mWifiConnection != null) {
-                    mWifiConnection.Stop();
-                    mWifiConnection = null;
-                }
-                if(mWifiAccessPoint != null){
-                    mWifiAccessPoint.Stop();
-                    mWifiAccessPoint = null;
-                }
-
-                if(mWifiServiceSearcher != null){
-                    mWifiServiceSearcher.Stop();
-                    mWifiServiceSearcher = null;
-                }
-                if(clientSocket != null) {
-                    try {
-                        clientSocket.close_socket();
-                        clientSocket = null;
-                        Log.d("Closing", "ClientSocket closed");
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                if(groupSocket != null) {
-                    try {
-                        groupSocket.close_socket();
-                        groupSocket = null;
-                        Log.d("Closing", "ServerSocket closed");
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                Log.d("Closing", "  COMPLETE!!");
-            }
-        });
-
-
-
-    public void onDestroy() {
-        super.onDestroy();
+    public void closeConnection() {
         if(mWifiConnection != null) {
             mWifiConnection.Stop();
             mWifiConnection = null;
@@ -245,10 +202,28 @@ public class Connection {
             mWifiServiceSearcher.Stop();
             mWifiServiceSearcher = null;
         }
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mBRReceiver);
+        if(clientSocket != null) {
+            try {
+                clientSocket.close_socket();
+                clientSocket = null;
+                Log.d("Closing", "ClientSocket closed");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if(groupSocket != null) {
+            try {
+                groupSocket.close_socket();
+                groupSocket = null;
+                Log.d("Closing", "ServerSocket closed");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        LocalBroadcastManager.getInstance(context).unregisterReceiver(mBRReceiver);
+        Log.d("Closing", "  COMPLETE!!");
     }
 
-    */
 
     private class MainBCReceiver extends BroadcastReceiver {
 
