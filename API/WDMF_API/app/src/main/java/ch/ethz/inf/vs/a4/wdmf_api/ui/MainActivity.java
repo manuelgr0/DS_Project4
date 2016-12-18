@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity  {
 
         // SEND MSG TO SERVICE TESTER //
 
-        final ImageButton btn = (ImageButton) findViewById(R.id.startButton);
+        final Button btn = (Button) findViewById(R.id.startButton);
         final TextView txt = (TextView) findViewById(R.id.textView);
         btn.setOnClickListener(new View.OnClickListener() {
             boolean on = false;
