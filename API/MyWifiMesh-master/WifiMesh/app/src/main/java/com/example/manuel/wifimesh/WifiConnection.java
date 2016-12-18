@@ -77,7 +77,7 @@ public class WifiConnection {
 
         this.netId = this.wifiManager.addNetwork(this.wifiConfig);
         //   this.wifiManager.disconnect();
-        this.wifiManager.enableNetwork(this.netId, true);
+        this.wifiManager.enableNetwork(this.netId, false);
         this.wifiManager.reconnect();
     }
 

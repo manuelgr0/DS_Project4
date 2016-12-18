@@ -9,6 +9,7 @@ import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.support.v4.content.LocalBroadcastManager;
+import android.text.format.Formatter;
 import android.util.Log;
 
 import java.net.InetAddress;
@@ -37,6 +38,7 @@ public class WifiConnection {
     private int  mConectionState = ConectionStateNONE;
 
     private boolean hadConnection = false;
+    public String IPIP;
 
     WifiManager wifiManager = null;
     WifiConfiguration wifiConfig = null;
@@ -51,7 +53,6 @@ public class WifiConnection {
 
     public WifiConnection(Context Context, String SSIS, String password, String ipAddr) {
         this.context = Context;
-        this.intetAddress = ipAddr;
 
         broadcaster = LocalBroadcastManager.getInstance(this.context);
 
@@ -91,11 +92,6 @@ public class WifiConnection {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d("WifiConnection", "OnReceive: " + intent);
-            Log.d("WifiConnection", "Extra: " + Arrays.toString(intent.getExtras().keySet().toArray()));
-            for(String key : intent.getExtras().keySet()){
-                Log.d("WifiConnection", key + " " + intent.getParcelableExtra(key));
-            }
 
             String action = intent.getAction();
             if (WifiManager.NETWORK_STATE_CHANGED_ACTION.equals(action)) {
@@ -136,7 +132,9 @@ public class WifiConnection {
                 WifiInfo wiffo = intent.getParcelableExtra(WifiManager.EXTRA_WIFI_INFO);
                 if(wiffo != null){
                     if(broadcaster != null) {
+                        Log.d("---------------", Formatter.formatIpAddress(wiffo.getIpAddress()));
                         Intent snInt = new Intent(DSS_WIFICON_SERVERADDRESS);
+                        intetAddress = Formatter.formatIpAddress(wiffo.getIpAddress());
                         snInt.putExtra(DSS_WIFICON_INETADDRESS, wiffo.getIpAddress());
                         broadcaster.sendBroadcast(snInt);
                     }

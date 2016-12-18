@@ -174,7 +174,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
         Button button4 = (Button) findViewById(R.id.button4);
+
         button4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -184,25 +186,15 @@ public class MainActivity extends AppCompatActivity {
                 //if(mWifiConnection.GetInetAddress() == ip){
                 if (mWifiConnection == null) {
                     Log.d("status", "................group owner");
-                    chat = new ChatManager(groupSocket.getSocket(), myHandler, "Group!!!!!");
+                    chat = new ChatManager(groupSocket.s, myHandler, "Group!!!!!");
                     new Thread(chat).start();
                 } else {
-                    chat = new ChatManager(clientSocket.getSocket(), myHandler, "Client!!!!");
+                    chat = new ChatManager(clientSocket.socket, myHandler, "Client!!!!");
                     new Thread(chat).start();
                 }
-                /*if(clientSocket != null && clientSocket.getSocket() != null) {
-                    chat = new ChatManager(clientSocket.getSocket(), myHandler, "Client!!!!");
-                    new Thread(chat).start();
-                }
-                if(groupSocket != null && groupSocket.getSocket() != null) {
-                    chat = new ChatManager(groupSocket.getSocket(), myHandler, "Group!!!!!");
-                    new Thread(chat).start();
-                }
-                mWifiConnection.*/
             }
         });
-
-
+/*
         Button button5 = (Button) findViewById(R.id.button5);
         button5.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -248,6 +240,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        */
 
         mBRReceiver = new MainBCReceiver();
         filter = new IntentFilter();
@@ -299,24 +292,7 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
 
-            if (WifiAccessPoint.DSS_WIFIAP_VALUES.equals(action)) {
-                String s = intent.getStringExtra(WifiAccessPoint.DSS_WIFIAP_MESSAGE);
-                Log.d("AP", s);
-
-            }else if (WifiAccessPoint.DSS_WIFIAP_SERVERADDRESS.equals(action)) {
-                InetAddress address = (InetAddress)intent.getSerializableExtra(WifiAccessPoint.DSS_WIFIAP_INETADDRESS);
-                Log.d("AP", "inet address" + address.getHostAddress());
-
-            }else if (WifiServiceSearcher.DSS_WIFISS_VALUES.equals(action)) {
-                String s = intent.getStringExtra(WifiServiceSearcher.DSS_WIFISS_MESSAGE);
-                Log.d("SS", s);
-
-            }else if (WifiServiceSearcher.DSS_WIFISS_PEERCOUNT.equals(action)) {
-                int s = intent.getIntExtra(WifiServiceSearcher.DSS_WIFISS_COUNT, -1);
-                Log.d("SS", "found " + s + " peers");
-                Log.d("", s+ " peers discovered.");
-
-            }else if (WifiServiceSearcher.DSS_WIFISS_PEERAPINFO.equals(action)) {
+            if (WifiServiceSearcher.DSS_WIFISS_PEERAPINFO.equals(action)) {
                 String s = intent.getStringExtra(WifiServiceSearcher.DSS_WIFISS_INFOTEXT);
 
                 separated = s.split(":");
@@ -324,18 +300,16 @@ public class MainActivity extends AppCompatActivity {
                 ((TextView) findViewById(R.id.textView2)).setText("found SSID:" + separated[1] + ", pwd:"  + separated[2]);
                 SSID = separated[1];
 
-            }else if (WifiConnection.DSS_WIFICON_VALUES.equals(action)) {
-                String s = intent.getStringExtra(WifiConnection.DSS_WIFICON_MESSAGE);
-                Log.d("CON", s);
-
             }else if (WifiConnection.DSS_WIFICON_SERVERADDRESS.equals(action)) {
                 int addr = intent.getIntExtra(WifiConnection.DSS_WIFICON_INETADDRESS, -1);
                 Log.d("COM", "IP" + Formatter.formatIpAddress(addr));
                 serverIp = Formatter.formatIpAddress(addr);
+                String IpToConnect = mWifiConnection.GetInetAddress();
                 if(clientSocket == null &&  mWifiConnection != null) {
                     //String IpToConnect = mWifiConnection.GetInetAddress();
                     Log.d("","Starting client socket conenction to : " + serverIp);
-                    clientSocket = new ClientSocketHandler(myHandler,serverIp, Integer.parseInt(CLIENT_PORT_INSTANCE), that);
+                    Log.d("","Starting client socket conenction to : " + IpToConnect);
+                    clientSocket = new ClientSocketHandler(myHandler,IpToConnect, Integer.parseInt(CLIENT_PORT_INSTANCE), that);
                     clientSocket.start();
                 }
             }else if (WifiConnection.DSS_WIFICON_STATUSVAL.equals(action)) {
@@ -378,14 +352,6 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 Log.d("COM", "Status " + conStatus);
-            }else if (ClientSocketHandler.DSS_CLIENT_VALUES.equals(action)) {
-                String s = intent.getStringExtra(ClientSocketHandler.DSS_CLIENT_MESSAGE);
-                Log.d("Client", s);
-
-            }else if (GroupOwnerSocketHandler.DSS_GROUP_VALUES.equals(action)) {
-                String s = intent.getStringExtra(GroupOwnerSocketHandler.DSS_GROUP_MESSAGE);
-                Log.d("Group", s);
-
             }
         }
     }

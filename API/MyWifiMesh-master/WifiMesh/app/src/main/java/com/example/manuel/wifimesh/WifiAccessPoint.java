@@ -138,53 +138,19 @@ public class WifiAccessPoint implements WifiP2pManager.ConnectionInfoListener,Wi
 
     private void startLocalService(String instance) {
 
-        // password and network name are also passed in the instance name so the map is redundant
         Map<String, String> record = new HashMap<String, String>();
-        record.put("password", mPassphrase);
-        record.put("networkName", mNetworkName);
+        record.put("available", "visible");
 
-        mDnsSdServiceInfo = WifiP2pDnsSdServiceInfo.newInstance( instance, MainActivity.SERVICE_TYPE, record);
-        mInstanceName = instance;
-        mDnsSdServiceHandler = new Handler();
+        WifiP2pDnsSdServiceInfo service = WifiP2pDnsSdServiceInfo.newInstance( instance, MainActivity.SERVICE_TYPE, record);
 
-        mKeepBroadcastingLocalSercive = true;
-        repeatingServiceBroadcastPart();
-
-    }
-
-    private void repeatingServiceBroadcastPart() {
-        //Log.d(TAG, "Clearing local services");
-        p2p.clearLocalServices(channel, new WifiP2pManager.ActionListener() {
-
-            @Override
+        Log.d("Add local service :", instance);
+        p2p.addLocalService(channel, service, new WifiP2pManager.ActionListener() {
             public void onSuccess() {
-                //Log.d(TAG, "Add local service :" + mInstanceName);
-                p2p.addLocalService(channel, mDnsSdServiceInfo, new WifiP2pManager.ActionListener() {
-
-                    @Override
-                    public void onSuccess() {
-                        //Log.d(TAG, "Added local service, removing and re-adding after delay.");
-                        mDnsSdServiceHandler.postDelayed(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                if (mKeepBroadcastingLocalSercive) {
-                                    repeatingServiceBroadcastPart();
-                                }
-                            }
-                        }, 10000L);
-                    }
-
-                    @Override
-                    public void onFailure(int reason) {
-                        Log.d(TAG, "Adding local service failed, error code " + reason);
-                    }
-                });
+                Log.d(TAG, "Added local service");
             }
 
-            @Override
             public void onFailure(int reason) {
-
+                Log.d("Adding local ", "service failed, error code " + reason);
             }
         });
     }
@@ -192,8 +158,6 @@ public class WifiAccessPoint implements WifiP2pManager.ConnectionInfoListener,Wi
     private void stopLocalServices() {
         mNetworkName = "";
         mPassphrase = "";
-
-        mKeepBroadcastingLocalSercive = false;
 
         p2p.clearLocalServices(channel, new WifiP2pManager.ActionListener() {
             public void onSuccess() {

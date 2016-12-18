@@ -54,17 +54,19 @@ public class DataExchanger extends BroadcastReceiver {
                 mWifiServiceSearcher.Stop();
                 mWifiServiceSearcher = null;
             }*/
-            Log.d("Connection ", "Try to connect............." + ip);
             mWifiConnection = new WifiConnection(mainActivity, SSID, pw, ip);
 //            mWifiConnection.SetInetAddress(ip);
 
             // connect to server socket now (in a separate thread for IO because we are bound to UI in the teset app)
+            Log.d("------------","-----------");
+            socket = new Socket();
             new Thread() {
                 public void run() {
                     try {
-                        socket = new Socket();
+                        Log.d("--------------------", mWifiConnection.GetInetAddress());
                         // 16s timeout
-                        socket.connect(new InetSocketAddress(ip, 9100), 16000);
+                        socket.bind(null);
+                        socket.connect(new InetSocketAddress(mWifiConnection.GetInetAddress(), 38000), 16000);
                         onSuccessfulConnect();
                     }
                     catch (IOException e) {
@@ -80,7 +82,7 @@ public class DataExchanger extends BroadcastReceiver {
     public void openServer(){
         if (serverSocket == null){
             try {
-                serverSocket = new ServerSocket(9100);
+                serverSocket = new ServerSocket(38000);
 
                // serverSocket.setSoTimeout(16000);
                 serverSocket.setReuseAddress(true);

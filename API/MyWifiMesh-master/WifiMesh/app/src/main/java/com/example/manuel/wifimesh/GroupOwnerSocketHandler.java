@@ -20,17 +20,18 @@ public class GroupOwnerSocketHandler extends Thread {
     static final public String DSS_GROUP_MESSAGE = "test.microsoft.com.mywifimesh.DSS_GROUP_MESSAGE";
 
     LocalBroadcastManager broadcaster;
-    ServerSocket socket = null;
     private Handler handler;
     private static final String TAG = "GroupOwnerSocketHandler";
     private ChatManager chat;
-    private Socket s;
+    private ServerSocket socket;
+    public Socket s;
 
     public GroupOwnerSocketHandler(Handler handler, int port,Context context) throws IOException {
         try {
             this.broadcaster = LocalBroadcastManager.getInstance(context);
-            socket = new ServerSocket(port);
+            ServerSocket socket = new ServerSocket(port);
             this.handler = handler;
+            this.socket = socket;
             Log.d("GroupOwnerSocketHandler", "Socket Started");
         } catch (Exception e) {
             if(broadcaster != null) {
@@ -84,7 +85,7 @@ public class GroupOwnerSocketHandler extends Thread {
         }
     }
 
-    public void close_socket() throws IOException {
+    /*public void close_socket() throws IOException {
         if(s != null) {
             s.close();
         }
@@ -95,5 +96,5 @@ public class GroupOwnerSocketHandler extends Thread {
     }
 
     public Socket getSocket() {return s;}
-
+*/
 }
