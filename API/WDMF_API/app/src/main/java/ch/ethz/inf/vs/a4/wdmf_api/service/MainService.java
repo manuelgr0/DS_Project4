@@ -64,6 +64,7 @@ public class MainService extends Service {
         ackTable = new AckTable(userID);
         buffer = new MessageBuffer(networkName, 1000 * maxBufferSize, ackTable, lcTable);
         neighbourhood = new NeighbourList();
+        WifiBackend.init(this);
     }
 
     @Override

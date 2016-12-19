@@ -22,7 +22,6 @@ import ch.ethz.inf.vs.a4.wdmf_api.service.IncomingHandler;
 import ch.ethz.inf.vs.a4.wdmf_api.service.MainService;
 
 public class MainActivity extends AppCompatActivity  {
-   //TODO: UI reorganisation + design
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

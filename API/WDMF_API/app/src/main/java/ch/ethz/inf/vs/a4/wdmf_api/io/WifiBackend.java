@@ -1,5 +1,6 @@
 package ch.ethz.inf.vs.a4.wdmf_api.io;
 
+import android.content.Context;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -14,12 +15,20 @@ import ch.ethz.inf.vs.a4.wdmf_api.service.MainService;
 
 public class WifiBackend {
 
+    private static Connection con;
     private static HashMap<String, byte[]> wifiBuffer = new HashMap<>();
     private static boolean outGoingConnectionReady = false;
     private static volatile boolean incommingConnectionWaiting = false;
+    private static String mMacAddr = null;
+
+    public static void init(Context ctx){
+        con = new Connection(ctx);
+        con.discoverp();
+    }
 
     public static void connectTo(String macAddress) throws Exception {
-        //TODO
+        con.stopServiceDiscovery();
+        con.connect(macAddress);
     }
 
     public static boolean incommingConnectionRequestWaiting(){
@@ -45,9 +54,10 @@ public class WifiBackend {
     }
 
     public static void  receiveFrameFrom(byte[] frame, String macAddr) {
+        mMacAddr = macAddr;
         synchronized(wifiBuffer) {
             if(wifiBuffer.containsKey(macAddr)){
-                Log.d("WifiBackend", "frame for " + macAddr + " overwritten in Wifi Buffer");
+                Log.d("WifiBackend", "frame from " + macAddr + " overwritten in Wifi Buffer");
             }
             wifiBuffer.put(macAddr, frame);
             wifiBuffer.notify();
@@ -55,23 +65,24 @@ public class WifiBackend {
     }
 
     public static void send(byte[] frame) throws Exception {
-        //TODO
+        con.send(frame);
     }
 
     public static String getOtherMacAddress() {
-        // TODO
-        return null;
+        return mMacAddr;
     }
 
     public static void close() {
-        //TODO
+        con.closeConnection();
+        con.startServiceDiscovery();
+        mMacAddr = null;
         outGoingConnectionReady = false;
         incommingConnectionWaiting = false;
     }
 
     public static ArrayList<String> getNeighbourhood() {
-        // TODO
-        return null;
+        con.discoverp(); // QUESTIONABLE
+        return con.updatepeer();
     }
 
     public static void incomingConnectionReceived(){

@@ -42,7 +42,7 @@ public class Connection {
     WifiP2pManager mManager;
     private WifiP2pManager.Channel mChannel;
     WifiP2pManager.PeerListListener mypeerlistener;
-    private List peers = new ArrayList();
+    private ArrayList<String> peers = new ArrayList();
 
     Connection.MainBCReceiver mBRReceiver;
     private IntentFilter filter;
@@ -277,7 +277,7 @@ public class Connection {
         });
     }
 
-    public List updatepeer() {
+    public ArrayList<String> updatepeer() {
         mManager.requestPeers(mChannel, mypeerlistener);
         return peers;
     }
