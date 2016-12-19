@@ -65,6 +65,8 @@ public class Connection {
 
     String[] separated;
 
+    private boolean mShouldStopServiceDiscovery;
+
     GroupOwnerSocketHandler  groupSocket = null;
     ClientSocketHandler clientSocket = null;
     ChatManager chat = null;
@@ -189,10 +191,89 @@ public class Connection {
         // start a new service searcher
         mWifiServiceSearcher = new WifiServiceSearcher(context);
         mWifiServiceSearcher.Start();
+        //Handler handler = new Handler();
+        //repeatServiceDiscovery(handler);
+    }
+
+    private void repeatServiceDiscovery(final Handler handler) {
+        mWifiServiceSearcher = new WifiServiceSearcher(context);
+        mWifiServiceSearcher.Start();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if(!mShouldStopServiceDiscovery) {
+                    repeatServiceDiscovery(handler);
+                }
+
+            }
+        }, 5000);
     }
 
     public void stopServiceDiscovery() {
-        closeConnection();
+        mShouldStopServiceDiscovery = true;
+        if(mWifiConnection != null) {
+            mWifiConnection.Stop();
+            mWifiConnection = null;
+        }
+        if(mWifiAccessPoint != null){
+            mWifiAccessPoint.Stop();
+            mWifiAccessPoint = null;
+        }
+
+        if(mWifiServiceSearcher != null){
+            mWifiServiceSearcher.Stop();
+            mWifiServiceSearcher = null;
+        }
+        if(clientSocket != null) {
+            try {
+                clientSocket.close_socket();
+                clientSocket = null;
+                Log.d("Closing", "ClientSocket closed");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if(groupSocket != null) {
+            try {
+                groupSocket.close_socket();
+                groupSocket = null;
+                Log.d("Closing", "ServerSocket closed");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if(mWifiConnection != null) {
+            mWifiConnection.Stop();
+            mWifiConnection = null;
+        }
+        if(mWifiAccessPoint != null){
+            mWifiAccessPoint.Stop();
+            mWifiAccessPoint = null;
+        }
+
+        if(mWifiServiceSearcher != null){
+            mWifiServiceSearcher.Stop();
+            mWifiServiceSearcher = null;
+        }
+        if(clientSocket != null) {
+            try {
+                clientSocket.close_socket();
+                clientSocket = null;
+                Log.d("Closing", "ClientSocket closed");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if(groupSocket != null) {
+            try {
+                groupSocket.close_socket();
+                groupSocket = null;
+                Log.d("Closing", "ServerSocket closed");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void closeConnection() {
@@ -327,7 +408,7 @@ public class Connection {
                     Log.d("Connection ", "Try to connect............." + ipAddress);
                     Log.d("m1", mMACAddress);
                     Log.d("eingabe", "ölkjö   : " + mAddress);
-                    if(mMACAddress.equals(mAddress)) {
+                    if(mMACAddress.substring(3).equals(mAddress.substring(3))) {
                         Log.d("Right MAC    ", "YAAAAAAAAYYYYYY");
                         mWifiConnection = new WifiConnection(context, networkSSID, networkPass, mAddress);
                         mWifiConnection.SetInetAddress(ipAddress);
@@ -341,9 +422,8 @@ public class Connection {
                 int addr = intent.getIntExtra(WifiConnection.DSS_WIFICON_INETADDRESS, -1);
                 Log.d("COM", "IP" + Formatter.formatIpAddress(addr));
                 serverIp = Formatter.formatIpAddress(addr);
-                String IpToConnect = mWifiConnection.GetInetAddress();
                 if(clientSocket == null &&  mWifiConnection != null) {
-                    //String IpToConnect = mWifiConnection.GetInetAddress();
+                    String IpToConnect = mWifiConnection.GetInetAddress();
                     clientSocket = new ClientSocketHandler(myHandler, IpToConnect, Integer.parseInt(CLIENT_PORT_INSTANCE), context);
                     clientSocket.start();
                 }

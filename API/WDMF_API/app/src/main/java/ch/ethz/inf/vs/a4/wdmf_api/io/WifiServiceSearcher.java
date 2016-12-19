@@ -130,7 +130,9 @@ public class WifiServiceSearcher  implements WifiP2pManager.ChannelListener{
 
 
     public void Stop() {
-        this.context.unregisterReceiver(receiver);
+        if(receiver != null) {
+            this.context.unregisterReceiver(receiver);
+        }
         stopDiscovery();
         stopPeerDiscovery();
     }
@@ -177,7 +179,7 @@ public class WifiServiceSearcher  implements WifiP2pManager.ChannelListener{
                             public void onFailure(int reason) {Log.d("Starting service", " discovery failed, error code " + reason);}
                         });
                     }
-                }, 1000);
+                }, 12000);
             }
 
             public void onFailure(int reason) {

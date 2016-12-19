@@ -62,7 +62,7 @@ public class GroupOwnerSocketHandler extends Thread {
                 s = socket.accept();
                 Log.d(TAG, "Launching the Group I/O handler");
                 //TODO: Callback for Köbi
-                WifiBackend.incomingConnectionReceived();
+                WifiBackend.onConnectSuccess();
 
             } catch (Exception e) {
                 try {

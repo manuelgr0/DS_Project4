@@ -20,15 +20,24 @@ public class WifiBackend {
     private static boolean outGoingConnectionReady = false;
     private static volatile boolean incommingConnectionWaiting = false;
     private static String mMacAddr = null;
+    private static volatile boolean go;
 
     public static void init(Context ctx){
         con = new Connection(ctx);
         con.discoverp();
+        con.startServiceDiscovery();
     }
 
     public static void connectTo(String macAddress) throws Exception {
+        go = false;
         con.stopServiceDiscovery();
         con.connect(macAddress);
+        //block until callback
+        // TODO wait/notify
+        while(!go);
+    }
+    public static void onConnectSuccess(){
+        go =true;
     }
 
     public static boolean incommingConnectionRequestWaiting(){
@@ -84,6 +93,7 @@ public class WifiBackend {
         con.discoverp(); // QUESTIONABLE
         return con.updatepeer();
     }
+
 
     public static void incomingConnectionReceived(){
         if(incommingConnectionWaiting){

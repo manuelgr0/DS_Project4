@@ -84,7 +84,9 @@ public class WifiAccessPoint implements WifiP2pManager.ConnectionInfoListener,Wi
     }
 
     public void Stop() {
-        this.context.unregisterReceiver(receiver);
+        if(receiver != null) {
+            this.context.unregisterReceiver(receiver);
+        }
         stopLocalServices();
         removeGroup();
     }

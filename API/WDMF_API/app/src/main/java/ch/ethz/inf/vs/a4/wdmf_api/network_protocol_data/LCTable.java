@@ -41,7 +41,11 @@ public class LCTable {
     }
 
     public boolean hasKey(String node){
-       return hash.containsKey(node);
+        if(hash != null) {
+            return hash.containsKey(node);
+        }else {
+            return false;
+        }
     }
 
     public boolean entryIsOlderThan(String node, long timestamp){

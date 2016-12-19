@@ -1,6 +1,8 @@
 package ch.ethz.inf.vs.a4.wdmf_api.local_data;
 
 
+import android.util.Log;
+
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,7 +50,7 @@ final public class MessageBuffer {
     // For messages with a local origin, we don't know the seq_nr yet
     public void addLocalMessage(byte[] msg, int appID){
         // Disable for JUnit test
-        // Log.d("Message Buffer", "Message buffer stores data:\n" + Arrays.toString(msg));
+         Log.d("Message Buffer", "Message buffer stores data:\n" + Arrays.toString(msg));
 
         EnumeratedMessage em = new EnumeratedMessage(msg, seq_nr, owner, appID);
         insertEnumeratedMessage(em);
@@ -65,6 +67,7 @@ final public class MessageBuffer {
     // For messages that are already parsed to enumerated messages
     // and stored as byte array
     public void addRawEnumeratedMessage(byte[] rawMsg){
+        Log.d("Message Buffer", "HURRA!!! Message buffer stores remote data");
         EnumeratedMessage em = new EnumeratedMessage(rawMsg);
         insertEnumeratedMessage(em);
     }

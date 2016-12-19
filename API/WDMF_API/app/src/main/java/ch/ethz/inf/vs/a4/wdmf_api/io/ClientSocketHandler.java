@@ -38,10 +38,12 @@ public class  ClientSocketHandler extends Thread {
         try {
             socket.bind(null);
             Log.d("kkkkkkkkkkkkkk","kkkkkkkkkkkkk" + mAddress);
-            socket.connect(new InetSocketAddress(mAddress,mPort), 5000);
+            socket.connect(new InetSocketAddress(mAddress,mPort), 10000);
             Log.d(TAG, "Launching the I/O handler");
             socket_connected = true;
         } catch (Exception e) {
+            Log.d("connect ", "failed");
+            e.printStackTrace();
             if(broadcaster != null) {
                 Intent intent = new Intent(DSS_CLIENT_VALUES);
                 intent.putExtra(DSS_CLIENT_MESSAGE, e.toString());

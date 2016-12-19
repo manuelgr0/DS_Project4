@@ -1,8 +1,11 @@
 package ch.ethz.inf.vs.a4.wdmf_api.service;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Message;
@@ -49,7 +52,7 @@ public class MainService extends Service {
     String networkName = "MyNetworkName";
     String userID = "Name not initialized";
     long maxBufferSize = 1000000;
-    public static  long WIFI_RECEIVE_TIMEOUT = 2000;
+    public static  long WIFI_RECEIVE_TIMEOUT = 20000;
     public static volatile int timeout = 30*60*1000;
     boolean prefsLocked = false;
     static int MAX_REORDERING = 8;
@@ -58,8 +61,10 @@ public class MainService extends Service {
     public void onCreate(){
         // TODO: get correct name in network (MAC address? Something unique that is easily visible for others)
 
-        userID = "Test Name " + new Date();
         updateFromPreferences();
+        WifiManager mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        WifiInfo wInfo = mWifiManager.getConnectionInfo();
+        userID = wInfo.getMacAddress();
         lcTable = new LCTable(userID);
         ackTable = new AckTable(userID);
         buffer = new MessageBuffer(networkName, 1000 * maxBufferSize, ackTable, lcTable);
@@ -120,11 +125,13 @@ public class MainService extends Service {
             start = new Date().getTime();
 
             // get currently visible devices
-            List<String> deviceIdentifier = WifiBackend.getNeighbourhood();
+            List<String> deviceIdentifier = (List<String>) WifiBackend.getNeighbourhood().clone();
+            Log.d("Main Service ", deviceIdentifier.toString());
 
             // Go through visible devices to contact them if necessary
             if(deviceIdentifier != null) {
                 for (String neighbour : deviceIdentifier) {
+                    if(userID.hashCode() < neighbour.hashCode()) {continue;}
                     // lock buffer because IPC messages will be handled by another thread
                     synchronized (buffer) {
                         // First check if someone is already trying to connect to us
@@ -139,6 +146,7 @@ public class MainService extends Service {
                             if (buffer.hasMessagesForReceiver(neighbour)
                                     || lcTable.entryIsOlderThan(neighbour, (new Date()).getTime() - maxNoContactTime)) {
                                 try {
+                                    Log.d("Try to connect", "WifiBackend");
                                     WifiBackend.connectTo(neighbour);
                                     syncPeerToPeer();
                                 } catch (Exception e) {
@@ -150,8 +158,10 @@ public class MainService extends Service {
                             Date lastTry = neighbourhood.last_contact(neighbour);
                             Date threshold = new Date(System.currentTimeMillis() - maxNoContactTimeForeignDevices);
                             // Contact node if we haven't done so already recently
-                            if (lastTry != null && lastTry.after(threshold)) {
+                            Log.d("TAG", "1");
+                            if (lastTry == null || lastTry.after(threshold)) {
                                 try {
+                                    Log.d("TAG", "2");
                                     WifiBackend.connectTo(neighbour);
                                     syncPeerToPeer();
                                 } catch (Exception e) {
